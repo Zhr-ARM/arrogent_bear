@@ -2,7 +2,9 @@
   "name": "xianshi",
   "type": "ARM",
   "dependenceList": [],
-  "srcDirs": [],
+  "srcDirs": [
+    "../../Drivers/Hardware"
+  ],
   "virtualFolder": {
     "name": "<virtual_root>",
     "files": [],
@@ -334,7 +336,8 @@
           "../../Drivers/CMSIS/Device/ST/STM32F4xx/Include",
           "../../Drivers/CMSIS/Include",
           ".cmsis/include",
-          "../RTE/_xianshi"
+          "../RTE/_xianshi",
+          "../../Drivers/Hardware"
         ],
         "libList": [],
         "defineList": [

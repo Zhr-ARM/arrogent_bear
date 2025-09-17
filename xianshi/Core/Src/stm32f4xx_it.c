@@ -22,6 +22,8 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "FreeRTOS.h"
+#include "semphr.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -204,5 +206,58 @@ void TIM6_DAC_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
+uint8_t u2temp=0;
+uint8_t u2index=0;
+extern SemaphoreHandle_t xUartSemaphore;
+void u2_calculate(uint8_t data)
+{
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  if(data=='c'&&u2index==0)
+    {
+      u2index++;
+    }
+    else if(data=='o'&&u2index==1)
+    {
+      u2index++;
+    }
+    else if(data=='n'&&u2index==2)
+    {
+      u2index++;
+    }
+    else if(data=='n'&&u2index==3)
+    {
+      u2index++;
+    }
+    else if(data=='e'&&u2index==4)
+    {
+      u2index++;
+    }
+    else if(data=='c'&&u2index==5)
+    {
+      u2index++;
+    }
+    else if(data=='t'&&u2index==6)
+    {
+      u2index=0;
+      // 释放信号量，唤醒等待任务
+        xSemaphoreGiveFromISR(xUartSemaphore, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken); // 必须！保证高优先级任务及时切换
+    }
+    else
+    {
+      u2index=0;
+    }
+}
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if(huart->Instance == USART2)
+  {
+    u2_calculate(u2temp);
+    HAL_UART_Receive_IT(&huart2,&u2temp,1); //开启下一次接收
+  }
+  else if(huart->Instance == USART1)
+  {
+    HAL_UART_Receive_IT(&huart1,&u2temp,1); //开启下一次接收
+  }
+}
 /* USER CODE END 1 */

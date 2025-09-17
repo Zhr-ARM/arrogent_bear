@@ -92,7 +92,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t temp;
+  HAL_UART_Receive_IT(&huart2,&temp,1); //开启第一次接收
+  HAL_UART_Receive_IT(&huart1,&temp,1); //开启下一次接收
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */

@@ -33,7 +33,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+SemaphoreHandle_t xUartSemaphore;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -151,12 +151,21 @@ void StartDefaultTask(void const * argument)
 void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
+  xUartSemaphore = xSemaphoreCreateBinary();
+  configASSERT(xUartSemaphore);
   printf("Hello FreeRTOS\r\n");
   u2printf((const char *)"Hello UART2\r\n");
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    if(xSemaphoreTake(xUartSemaphore, portMAX_DELAY) == pdTRUE)
+    {
+      u2printf("main.t0.txt=\"abc\"\xff\xff\xff");
+      u2printf("road.t0.txt=\"abc\"\xff\xff\xff");
+      u2printf("record.t0.txt=\"abc\"\xff\xff\xff");
+      u2printf("setting.t0.txt=\"abc\"\xff\xff\xff");
+    }
+    osDelay(50);
   }
   /* USER CODE END StartTask02 */
 }

@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * File Name          : freertos.c
-  * Description        : Code for freertos applications
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : freertos.c
+ * Description        : Code for freertos applications
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
 static StaticTask_t xIdleTaskTCBBuffer;
 static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
 
-void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
+void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
 {
   *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
   *ppxIdleTaskStackBuffer = &xIdleStack[0];
@@ -111,7 +111,7 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of uart1 */
-  osThreadDef(uart1, StartTask02, osPriorityIdle, 0, 128);
+  osThreadDef(uart1, StartTask02, osPriorityIdle, 0, 512);
   uart1Handle = osThreadCreate(osThread(uart1), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -122,20 +122,20 @@ void MX_FREERTOS_Init(void) {
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
+ * @brief  Function implementing the defaultTask thread.
+ * @param  argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
-  for(;;)
+  for (;;)
   {
-    HAL_GPIO_WritePin(GPIOF,GPIO_PIN_4,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_4, GPIO_PIN_SET);
     osDelay(500);
-    HAL_GPIO_WritePin(GPIOF,GPIO_PIN_4,GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_4, GPIO_PIN_RESET);
     osDelay(500);
   }
   /* USER CODE END StartDefaultTask */
@@ -143,27 +143,40 @@ void StartDefaultTask(void const * argument)
 
 /* USER CODE BEGIN Header_StartTask02 */
 /**
-* @brief Function implementing the uart1 thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the uart1 thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartTask02 */
 void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
+  uint8_t show[450]={0};
+  show[50]=20;
+  show[100]=40;
+  show[150]=60;
+  show[250]=175;
   xUartSemaphore = xSemaphoreCreateBinary();
   configASSERT(xUartSemaphore);
   printf("Hello FreeRTOS\r\n");
-  u2printf((const char *)"Hello UART2\r\n");
+  u2printf("rest\xff\xff\xff");
   /* Infinite loop */
-  for(;;)
+  for (;;)
   {
-    if(xSemaphoreTake(xUartSemaphore, portMAX_DELAY) == pdTRUE)
+    if (xSemaphoreTake(xUartSemaphore, portMAX_DELAY) == pdTRUE)
     {
-      u2printf("main.t0.txt=\"abc\"\xff\xff\xff");
-      u2printf("road.t0.txt=\"abc\"\xff\xff\xff");
-      u2printf("record.t0.txt=\"abc\"\xff\xff\xff");
-      u2printf("setting.t0.txt=\"abc\"\xff\xff\xff");
+      u2printf("main.t2.txt=\"connect\"\xff\xff\xff");
+      u2printf("road.t2.txt=\"connect\"\xff\xff\xff");
+      u2printf("record.t2.txt=\"connect\"\xff\xff\xff");
+      u2printf("setting.t2.txt=\"connect\"\xff\xff\xff");
+      for (int i = 0; i < 450; i++)
+      {
+        // 向曲线s0的通道0传输1个数据,add指令不支持跨页面
+        char buffer[32];
+        snprintf(buffer, sizeof(buffer), "add main.s0.id,0,%d\xff\xff\xff", show[i]);
+        u2printf(buffer);
+      } 
+      printf("Get Semaphore\r\n");
     }
     osDelay(50);
   }

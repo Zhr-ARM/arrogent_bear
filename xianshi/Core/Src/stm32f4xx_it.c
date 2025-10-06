@@ -43,7 +43,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern QueueHandle_t recordHandle; // Declare recordHandle as a QueueHandle_t
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -207,47 +207,98 @@ void TIM6_DAC_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 uint8_t u2temp=0;
-uint8_t u2index=0;
 extern SemaphoreHandle_t xUartSemaphore;
+extern volatile uint8_t uart_processing;
 void u2_calculate(uint8_t data)
 {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  if(data=='c'&&u2index==0)
+  static uint8_t record_index = 0; // 用于检测 "record"
+  static uint8_t connect_index = 0; // 用于检测 "connect"
+  
+  // 检测 "record"
+  if (data == 'r' && record_index == 0)
+  {
+    record_index++;
+  }
+  else if (data == 'e' && record_index == 1)
+  {
+    record_index++;
+  }
+  else if (data == 'c' && record_index == 2)
+  {
+    record_index++;
+  }
+  else if (data == 'o' && record_index == 3)
+  {
+    record_index++;
+  }
+  else if (data == 'r' && record_index == 4)
+  {
+    record_index++;
+  }
+  else if (data == 'd' && record_index == 5)
+  {
+    record_index = 0;
+    /* 向消息队列发送消息 */
+    uint16_t msg = 1; // 消息内容（可以是任意值）
+    if (recordHandle != NULL)
     {
-      u2index++;
+      xQueueSendFromISR(recordHandle, &msg, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
-    else if(data=='o'&&u2index==1)
+  }
+  else
+  {
+    record_index = 0;
+  }
+  // 检测 "connect"
+  if (data == 'c' && connect_index == 0)
+  {
+    connect_index++;
+  }
+  else if (data == 'o' && connect_index == 1)
+  {
+    connect_index++;
+  }
+  else if (data == 'n' && connect_index == 2)
+  {
+    connect_index++;
+  }
+  else if (data == 'n' && connect_index == 3)
+  {
+    connect_index++;
+  }
+  else if (data == 'e' && connect_index == 4)
+  {
+    connect_index++;
+  }
+  else if (data == 'c' && connect_index == 5)
+  {
+    connect_index++;
+  }
+  else if (data == 't' && connect_index == 6)
+  {
+    connect_index = 0;
+    /* 释放信号量 */
+    if (xUartSemaphore != NULL)
     {
-      u2index++;
-    }
-    else if(data=='n'&&u2index==2)
-    {
-      u2index++;
-    }
-    else if(data=='n'&&u2index==3)
-    {
-      u2index++;
-    }
-    else if(data=='e'&&u2index==4)
-    {
-      u2index++;
-    }
-    else if(data=='c'&&u2index==5)
-    {
-      u2index++;
-    }
-    else if(data=='t'&&u2index==6)
-    {
-      u2index=0;
-      // 释放信号量，唤醒等待任务
+      if(uart_processing == 0) // 仅当未在处理时才释放
+      {
         xSemaphoreGiveFromISR(xUartSemaphore, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken); // 必须！保证高优先级任务及时切换
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        uart_processing = 1;
+      }
     }
-    else
-    {
-      u2index=0;
-    }
+  }
+  else
+  {
+    connect_index = 0;
+  }
 }
+
+
+/* 推荐修复：不要把同一个接收缓冲 u2temp 用在 USART1/USART2 上，避免冲突 */
+static uint8_t u1temp = 0;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if(huart->Instance == USART2)
@@ -257,7 +308,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   else if(huart->Instance == USART1)
   {
-    HAL_UART_Receive_IT(&huart1,&u2temp,1); //开启下一次接收
+    HAL_UART_Receive_IT(&huart1,&u1temp,1); // 使用独立缓冲
   }
 }
 /* USER CODE END 1 */

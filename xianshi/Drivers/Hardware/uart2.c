@@ -9,7 +9,7 @@ void u2printf(const char *str)
     uart2_tx_busy = 1;
     memset(uart2_tx_buf, 0, sizeof(uart2_tx_buf));
     snprintf((char *)uart2_tx_buf, sizeof(uart2_tx_buf), "%s", str);
-    HAL_UART_Transmit_IT(&huart2, uart2_tx_buf, strlen((char*)uart2_tx_buf));
+    HAL_UART_Transmit_IT(&huart2, uart2_tx_buf, strlen((char*)uart2_tx_buf)); // 确保参数正确
 }
 
 // 在 stm32f4xx_it.c 里

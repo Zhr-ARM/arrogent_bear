@@ -91,6 +91,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   uint8_t temp;
   HAL_UART_Receive_IT(&huart2,&temp,1); //开启第一次接收

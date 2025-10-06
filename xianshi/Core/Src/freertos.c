@@ -151,11 +151,16 @@ void StartDefaultTask(void const * argument)
 void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
-  uint8_t show[450]={0};
-  show[50]=20;
-  show[100]=40;
-  show[150]=60;
-  show[250]=175;
+  uint8_t record_show[450]={0};
+  uint8_t move_show[450]={0};
+  uint8_t history_show[450]={0};
+  record_show[50]=20;
+  record_show[100]=40;
+  history_show[150]=60;
+  history_show[250]=175;
+  move_show[300]=125;
+  move_show[350]=75;
+
   xUartSemaphore = xSemaphoreCreateBinary();
   configASSERT(xUartSemaphore);
   printf("Hello FreeRTOS\r\n");
@@ -173,7 +178,11 @@ void StartTask02(void const * argument)
       {
         // 向曲线s0的通道0传输1个数据,add指令不支持跨页面
         char buffer[32];
-        snprintf(buffer, sizeof(buffer), "add main.s0.id,0,%d\xff\xff\xff", show[i]);
+        snprintf(buffer, sizeof(buffer), "add main.s0.id,0,%d\xff\xff\xff", record_show[i]);
+        u2printf(buffer);
+        snprintf(buffer, sizeof(buffer), "add main.s0.id,1,%d\xff\xff\xff", history_show[i]);
+        u2printf(buffer);
+        snprintf(buffer, sizeof(buffer), "add main.s0.id,2,%d\xff\xff\xff", move_show[i]);
         u2printf(buffer);
       } 
       printf("Get Semaphore\r\n");

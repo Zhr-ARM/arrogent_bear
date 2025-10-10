@@ -102,6 +102,8 @@ virtualFolder:
         - path: ../../Component/mydefine.h
         - path: ../../Component/PID.c
         - path: ../../Component/PID.h
+        - path: ../../Component/simple_path_tracker.c
+        - path: ../../Component/simple_path_tracker.h
       folders: []
 dependenceList: []
 outDir: build

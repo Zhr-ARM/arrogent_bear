@@ -1,3 +1,4 @@
+
 /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
@@ -32,6 +33,7 @@
 #include "uart2.h"
 #include <math.h>
 #include "record.h"
+#include "simple_path_tracker.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,6 +44,13 @@ extern PID_T pid_speed_A;  // A轮速度环
 extern PID_T pid_speed_B;  // B轮速度环
 extern PID_T pid_speed_C;  // C轮速度环
 extern PID_T pid_speed_D;  // D轮速度环
+
+PathTracker_MAP my_path_tracker; 
+uint16_t path_point_count = 0; // 当前路径点数量
+MapPoint_MAP* all_point_array; // 所有路径点数组
+
+uint16_t shortest_path_count = 0; // 最短路径点数量
+MapPoint_MAP shortest_path_array[MAX_SHORTEST_PATH_MAP]; // 最短路径数组
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -177,7 +186,7 @@ void MX_FREERTOS_Init(void) {
   run_taskHandle = osThreadCreate(osThread(run_task), NULL);
 
   /* definition and creation of run_record */
-  osThreadDef(run_record, run_show, osPriorityIdle, 0, 1024);
+  osThreadDef(run_record, run_show, osPriorityIdle, 0, 128);
   run_recordHandle = osThreadCreate(osThread(run_record), NULL);
 
   /* definition and creation of RGBwarn */
@@ -264,8 +273,8 @@ void Connect(void const * argument)
 void StartTask03(void const * argument)
 {
   /* USER CODE BEGIN StartTask03 */
-
-	
+  PathTracker_Init_MAP(&my_path_tracker);
+	PathTracker_StartRecording_MAP(&my_path_tracker, 0.0f, 0.0f);
   /* Infinite loop */
   for(;;)
   {
@@ -287,8 +296,12 @@ void StartTask03(void const * argument)
 //		my_printf(&huart4,"{C_filtered}%.2f,%.2f\r\n", pid_speed_C.target, C_encoder.speed_cm_s);
 //		my_printf(&huart4,"{D_filtered}%.2f,%.2f\r\n", pid_speed_D.target, D_encoder.speed_cm_s);
 		
-			my_printf(&huart4,"#%f,%d$"	,	f_yaw,(int)((A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f));
-		
+    my_printf(&huart4,"#%f,%d$"	,	f_yaw,(int)((A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f));
+		PathTracker_UpdateWithSpeed_MAP(&my_path_tracker, (A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f, f_yaw);
+    all_point_array = PathTracker_GetAllPoints_MAP(&my_path_tracker, &path_point_count);
+    path_point_count = PathTracker_FindShortestPath_MAP(&my_path_tracker, all_point_array[path_point_count-1].grid_x,all_point_array[path_point_count-1].grid_y );
+
+
     osDelay(100);
   }
   /* USER CODE END StartTask03 */
@@ -434,7 +447,7 @@ void run_show(void const * argument)
       osDelay(200); // 确保界面已经切换到 record 页面
       snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", 0, 70, 480, 70, 0);
       u2printf(buffer);
-      road_show(Shortest_Road,Hist_Road,shortest_count,hist_count);
+      road_show(shortest_path_array, all_point_array, shortest_path_count, path_point_count);
       printf("Record Command Sent\r\n");
     }
   }

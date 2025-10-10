@@ -4,9 +4,8 @@
 #include "task.h"
 #include "cmsis_os.h"
 #include <stdio.h>
+#include "simple_path_tracker.h"
 
-MapPoint_MAP Shortest_Road[50]={0};
-MapPoint_MAP Hist_Road[400]={0};
 uint8_t shortest_count = 0;          // 最短路径长度
 uint16_t hist_count = 0;             // 历史路径长度
 

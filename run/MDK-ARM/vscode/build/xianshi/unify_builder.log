@@ -1,0 +1,270 @@
+[2025-10-10 15:24:50]	[info] incremental build: 42 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\APP\PID_app.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\encoder_app.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\motor_app.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\path_planning.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\record.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\uart2.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\freertos.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\gpio.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\main.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_hal_msp.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_hal_timebase_tim.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_it.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\system_stm32f4xx.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\tim.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\usart.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_exti.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ramfunc.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_uart.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\croutine.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\list.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\queue.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\stream_buffer.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\tasks.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\timers.c': object (.o) file not exist
+'b:\arrogent_bear\run\MDK-ARM\startup_stm32f407xx.s': object (.o) file not exist
+
+[2025-10-10 15:24:52]	compilation failed at : "b:\arrogent_bear\run\Core\Src\main.c", exit code: 1
+command: 
+  "d:\KEIL_MDK\mdk\ARM\ARMCC\bin\armcc.exe" -c --apcs=interwork -I../../Core/Inc -I../../Drivers/STM32F4xx_HAL_Driver/Inc -I../../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../../Middlewares/Third_Party/FreeRTOS/Source/include -I../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I../../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../../Drivers/CMSIS/Include -I.cmsis/include -I../RTE/_xianshi -I../../Drivers/Hardware -I../../APP -D"USE_HAL_DRIVER" -D"STM32F407xx" --cpu Cortex-M4.fp --li --c99 -D__MICROLIB -O0 --split_sections --diag_suppress=1 --diag_suppress=1295 -g -o .\build\xianshi\.obj\__\__\Core\Src\main.o --no_depend_system_headers --depend .\build\xianshi\.obj\__\__\Core\Src\main.d .\..\..\Core\Src\main.c
+   at unify_builder.Program.compileByMulThread(Int32 thrNum, CmdInfo[] cmds_, List`1 errLogs)
+   at unify_builder.Program.Main(String[] args_)
+---
+".\..\..\APP\PID_app.h", line 4: Error:  #5: cannot open source input file "mydefine.h": No such file or directory
+  #include "mydefine.h"
+                       ^
+.\..\..\APP\PID_app.c: 0 warnings, 1 error
+".\..\..\APP\path_planning.h", line 9: Error:  #5: cannot open source input file "mydefine.h": No such file or directory
+  #include "mydefine.h"
+                       ^
+.\..\..\APP\path_planning.c: 0 warnings, 1 error
+".\..\..\Core\Src\freertos.c", line 32: Error:  #5: cannot open source input file "mydefine.h": No such file or directory
+  #include "mydefine.h"
+                       ^
+.\..\..\Core\Src\freertos.c: 0 warnings, 1 error
+".\..\..\APP\encoder_app.h", line 4: Error:  #5: cannot open source input file "mydefine.h": No such file or directory
+  #include "mydefine.h"
+                       ^
+.\..\..\APP\encoder_app.c: 0 warnings, 1 error
+".\..\..\APP\motor_app.h", line 4: Error:  #5: cannot open source input file "mydefine.h": No such file or directory
+  #include "mydefine.h"
+                       ^
+.\..\..\APP\motor_app.c: 0 warnings, 1 error
+".\..\..\Core\Src\stm32f4xx_it.c", line 27: Error:  #5: cannot open source input file "mydefine.h": No such file or directory
+  #include "mydefine.h"
+                       ^
+.\..\..\Core\Src\stm32f4xx_it.c: 0 warnings, 1 error
+".\..\..\Core\Src\main.c", line 28: Error:  #5: cannot open source input file "mydefine.h": No such file or directory
+  #include "mydefine.h"
+                       ^
+.\..\..\Core\Src\main.c: 0 warnings, 1 error
+
+[2025-10-10 15:25:42]	[info] incremental build: 42 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\APP\PID_app.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\encoder_app.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\motor_app.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\path_planning.c': object (.o) file not exist
+'b:\arrogent_bear\run\APP\record.c': compiler options has been changed.
+'b:\arrogent_bear\run\APP\uart2.c': compiler options has been changed.
+'b:\arrogent_bear\run\Core\Src\freertos.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\gpio.c': compiler options has been changed.
+'b:\arrogent_bear\run\Core\Src\main.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_hal_msp.c': compiler options has been changed.
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_hal_timebase_tim.c': compiler options has been changed.
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_it.c': object (.o) file not exist
+'b:\arrogent_bear\run\Core\Src\system_stm32f4xx.c': compiler options has been changed.
+'b:\arrogent_bear\run\Core\Src\tim.c': compiler options has been changed.
+'b:\arrogent_bear\run\Core\Src\usart.c': compiler options has been changed.
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.c': compiler options has been changed.
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_exti.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ramfunc.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim_ex.c': object (.o) file not exist
+'b:\arrogent_bear\run\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_uart.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\croutine.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\list.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\queue.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\stream_buffer.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\tasks.c': object (.o) file not exist
+'b:\arrogent_bear\run\Middlewares\Third_Party\FreeRTOS\Source\timers.c': object (.o) file not exist
+'b:\arrogent_bear\run\MDK-ARM\startup_stm32f407xx.s': object (.o) file not exist
+
+[2025-10-10 15:25:45]	link failed !, exit code: 1
+   at unify_builder.Program.Main(String[] args_)
+---
+Error: L6218E: Undefined symbol MotorDriver_SetMotor (referred from PID_app.o).
+Error: L6218E: Undefined symbol MotorDriver_StopAll (referred from PID_app.o).
+Error: L6218E: Undefined symbol MotorDriver_Turn (referred from PID_app.o).
+Error: L6218E: Undefined symbol MotorDriver_U_Turn (referred from PID_app.o).
+Error: L6218E: Undefined symbol my_printf (referred from PID_app.o).
+Error: L6218E: Undefined symbol pid_calculate_positional (referred from PID_app.o).
+Error: L6218E: Undefined symbol pid_constrain (referred from PID_app.o).
+Error: L6218E: Undefined symbol pid_init (referred from PID_app.o).
+Error: L6218E: Undefined symbol pid_set_limit (referred from PID_app.o).
+Error: L6218E: Undefined symbol pid_set_params (referred from PID_app.o).
+Error: L6218E: Undefined symbol pid_set_target (referred from PID_app.o).
+Error: L6218E: Undefined symbol pid_update_target (referred from PID_app.o).
+Error: L6218E: Undefined symbol Encoder_Driver_Init (referred from encoder_app.o).
+Error: L6218E: Undefined symbol Encoder_Driver_Update (referred from encoder_app.o).
+Error: L6218E: Undefined symbol MotorDriver_Init (referred from motor_app.o).
+Error: L6218E: Undefined symbol f_rho (referred from path_planning.o).
+Error: L6218E: Undefined symbol f_yaw (referred from path_planning.o).
+Error: L6218E: Undefined symbol RHO_Parse (referred from freertos.o).
+Error: L6218E: Undefined symbol Uart3_Parse (referred from freertos.o).
+Error: L6218E: Undefined symbol f_cross (referred from freertos.o).
+Error: L6218E: Undefined symbol JY61P_Send (referred from main.o).
+Error: L6218E: Undefined symbol Kalman_Init (referred from main.o).
+Error: L6218E: Undefined symbol Recv3 (referred from main.o).
+Error: L6218E: Undefined symbol Recv5 (referred from main.o).
+Error: L6218E: Undefined symbol RHO_Receive (referred from stm32f4xx_it.o).
+Error: L6218E: Undefined symbol Uart3_Receive (referred from stm32f4xx_it.o).
+Not enough information to list image symbols.
+Finished: 1 information, 0 warning and 26 error messages.
+
+
+[2025-10-10 15:26:47]	[info] incremental build: 4 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Component\PID.c': object (.o) file not exist
+'b:\arrogent_bear\run\Component\encoder_driver.c': object (.o) file not exist
+'b:\arrogent_bear\run\Component\monitor.c': object (.o) file not exist
+'b:\arrogent_bear\run\Component\motor_driver.c': object (.o) file not exist
+
+[2025-10-10 15:26:50]	[done]
+	build successfully !
+
+[2025-10-10 15:32:32]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Core\Src\freertos.c': source file has been changed.
+
+[2025-10-10 15:32:34]	[done]
+	build successfully !
+
+[2025-10-10 15:32:56]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Core\Src\freertos.c': source file has been changed.
+
+[2025-10-10 15:32:57]	[done]
+	build successfully !
+
+[2025-10-10 15:38:48]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Core\Src\freertos.c': source file has been changed.
+
+[2025-10-10 15:38:49]	[done]
+	build successfully !
+
+[2025-10-10 15:57:48]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_it.c': source file has been changed.
+
+[2025-10-10 15:57:48]	compilation failed at : "b:\arrogent_bear\run\Core\Src\stm32f4xx_it.c", exit code: 1
+command: 
+  "d:\KEIL_MDK\mdk\ARM\ARMCC\bin\armcc.exe" -c --apcs=interwork -I../../Core/Inc -I../../Drivers/STM32F4xx_HAL_Driver/Inc -I../../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../../Middlewares/Third_Party/FreeRTOS/Source/include -I../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I../../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I../../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../../Drivers/CMSIS/Include -I.cmsis/include -I../RTE/_xianshi -I../../Drivers/Hardware -I../../APP -I../../Component -D"USE_HAL_DRIVER" -D"STM32F407xx" --cpu Cortex-M4.fp --li --c99 -D__MICROLIB -O0 --split_sections --diag_suppress=1 --diag_suppress=1295 -g -o .\build\xianshi\.obj\__\__\Core\Src\stm32f4xx_it.o --no_depend_system_headers --depend .\build\xianshi\.obj\__\__\Core\Src\stm32f4xx_it.d .\..\..\Core\Src\stm32f4xx_it.c
+   at unify_builder.Program.Main(String[] args_)
+---
+".\..\..\Core\Src\stm32f4xx_it.c", line 275: Error:  #20: identifier "recordHandle" is undefined
+      if (recordHandle != NULL)
+          ^
+".\..\..\Core\Src\stm32f4xx_it.c", line 333: Warning:  #2548-D: multicharacter character literal (potential portability problem)
+    else if(data<='16'&&data>'0'&&show_index==1)
+                  ^
+".\..\..\Core\Src\stm32f4xx_it.c", line 337: Error:  #20: identifier "showHandle" is undefined
+      if (showHandle != NULL)
+          ^
+.\..\..\Core\Src\stm32f4xx_it.c: 1 warning, 2 errors
+
+[2025-10-10 15:58:17]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_it.c': source file has been changed.
+
+[2025-10-10 15:58:19]	[done]
+	build successfully !
+
+[2025-10-10 15:59:59]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Core\Src\stm32f4xx_it.c': source file has been changed.
+
+[2025-10-10 16:00:00]	[done]
+	build successfully !
+
+[2025-10-10 20:41:03]	[info] incremental build: 2 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\APP\record.c': dependence 'b:\arrogent_bear\run\MDK-ARM\vscode\..\..\APP\record.h' has been changed.
+'b:\arrogent_bear\run\Core\Src\freertos.c': dependence 'b:\arrogent_bear\run\MDK-ARM\vscode\..\..\APP\record.h' has been changed.
+
+[2025-10-10 20:41:05]	[done]
+	build successfully !
+
+[2025-10-10 21:10:52]	[done]
+	build successfully !
+
+[2025-10-10 21:11:20]	[done]
+	build successfully !
+
+[2025-10-10 21:11:31]	[done]
+	build successfully !
+
+[2025-10-10 21:11:58]	[done]
+	build successfully !
+
+[2025-10-10 21:14:12]	[info] incremental build: 1 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Core\Src\freertos.c': source file has been changed.
+
+[2025-10-10 21:14:13]	[done]
+	build successfully !
+
+[2025-10-10 21:15:40]	[info] incremental build: 2 source files changed
+These source files will be recompiled
+---
+'b:\arrogent_bear\run\Core\Src\freertos.c': source file has been changed.
+'b:\arrogent_bear\run\MDK-ARM\startup_stm32f407xx.s': source file has been changed.
+
+[2025-10-10 21:15:43]	[done]
+	build successfully !
+

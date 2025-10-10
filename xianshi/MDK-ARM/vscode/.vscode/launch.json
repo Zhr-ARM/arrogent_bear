@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "cwd": "${workspaceRoot}",
+            "type": "cortex-debug",
+            "request": "launch",
+            "name": "xianshi: OpenOCD",
+            "servertype": "openocd",
+            "executable": "build/xianshi/xianshi.elf",
+            "runToEntryPoint": "main",
+            "configFiles": [
+                "interface/stlink-v2.cfg",
+                "target/stm32f4x.cfg"
+            ]
+        }
+    ]
+}

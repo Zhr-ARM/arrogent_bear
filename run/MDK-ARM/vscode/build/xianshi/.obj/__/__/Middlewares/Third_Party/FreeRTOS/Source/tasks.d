@@ -1,0 +1,12 @@
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: .\..\..\Middlewares\Third_Party\FreeRTOS\Source\tasks.c
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Core/Inc/FreeRTOSConfig.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
+.\build\xianshi\.obj\__\__\Middlewares\Third_Party\FreeRTOS\Source\tasks.o: ../../Middlewares/Third_Party/FreeRTOS/Source/include/stack_macros.h

@@ -57,6 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define BEEP_Pin GPIO_PIN_0
+#define BEEP_GPIO_Port GPIOF
+#define RGB_Pin GPIO_PIN_1
+#define RGB_GPIO_Port GPIOF
 
 /* USER CODE BEGIN Private defines */
 

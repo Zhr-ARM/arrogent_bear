@@ -44,6 +44,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 extern QueueHandle_t recordHandle; // Declare recordHandle as a QueueHandle_t
+extern QueueHandle_t showHandle;   // Declare showHandle as a QueueHandle_t
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -214,7 +216,7 @@ void u2_calculate(uint8_t data)
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   static uint8_t record_index = 0; // 用于检测 "record"
   static uint8_t connect_index = 0; // 用于检测 "connect"
-  
+  static uint8_t show_index = 0; // 用于检测展示什么数据
   // 检测 "record"
   if (data == 'r' && record_index == 0)
   {
@@ -293,6 +295,25 @@ void u2_calculate(uint8_t data)
   else
   {
     connect_index = 0;
+  }
+  // 检测 "show"
+  if(data == 's' && show_index == 0)
+  {
+    show_index++;
+  }
+  else if(data<='16'&&data>'0'&&show_index==1)
+  {
+    // 处理 show[x] 的情况
+    uint16_t msg = (uint16_t)data;
+    if (showHandle != NULL)
+    {
+      xQueueSendFromISR(showHandle, &msg, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+  }
+  else
+  {
+    show_index = 0;
   }
 }
 

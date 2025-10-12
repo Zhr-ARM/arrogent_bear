@@ -1,4 +1,3 @@
-
 /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
@@ -34,6 +33,8 @@
 #include <math.h>
 #include "record.h"
 #include "simple_path_tracker.h"
+#include "pn532_task.h"
+#include "pn532.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,12 +46,8 @@ extern PID_T pid_speed_B;  // B轮速度环
 extern PID_T pid_speed_C;  // C轮速度环
 extern PID_T pid_speed_D;  // D轮速度环
 
-PathTracker_MAP my_path_tracker; 
-uint16_t path_point_count = 0; // 当前路径点数量
-MapPoint_MAP* all_point_array; // 所有路径点数组
-
-uint16_t shortest_path_count = 0; // 最短路径点数量
-MapPoint_MAP shortest_path_array[MAX_SHORTEST_PATH_MAP]; // 最短路径数组
+SPT_Tracker g_tracker; 
+SPT_Tracker g_shortest;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -79,6 +76,7 @@ osThreadId run_taskHandle;
 osThreadId run_recordHandle;
 osThreadId RGBwarnHandle;
 osThreadId recordsHandle;
+osThreadId record_calHandle;
 osMessageQId recordHandle;
 osMessageQId showHandle;
 
@@ -98,6 +96,7 @@ void StartTask08(void const * argument);
 void run_show(void const * argument);
 void Warn(void const * argument);
 void recordShow(void const * argument);
+void records_cal(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -162,7 +161,7 @@ void MX_FREERTOS_Init(void) {
   uart1Handle = osThreadCreate(osThread(uart1), NULL);
 
   /* definition and creation of UART4_monitor */
-  osThreadDef(UART4_monitor, StartTask03, osPriorityIdle, 0, 512);
+  osThreadDef(UART4_monitor, StartTask03, osPriorityNormal, 0, 512);
   UART4_monitorHandle = osThreadCreate(osThread(UART4_monitor), NULL);
 
   /* definition and creation of US3_JY91 */
@@ -186,7 +185,7 @@ void MX_FREERTOS_Init(void) {
   run_taskHandle = osThreadCreate(osThread(run_task), NULL);
 
   /* definition and creation of run_record */
-  osThreadDef(run_record, run_show, osPriorityIdle, 0, 128);
+  osThreadDef(run_record, run_show, osPriorityRealtime, 0, 1024);
   run_recordHandle = osThreadCreate(osThread(run_record), NULL);
 
   /* definition and creation of RGBwarn */
@@ -197,8 +196,14 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(records, recordShow, osPriorityIdle, 0, 1024);
   recordsHandle = osThreadCreate(osThread(records), NULL);
 
+  /* definition and creation of record_cal */
+  osThreadDef(record_cal, records_cal, osPriorityRealtime, 0, 1024);
+  record_calHandle = osThreadCreate(osThread(record_cal), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  osThreadDef(PN532_ICCardTask, StartPN532_ICCardTask, osPriorityHigh, 0, 1024);
+  osThreadCreate(osThread(PN532_ICCardTask), NULL);
   /* USER CODE END RTOS_THREADS */
 
 }
@@ -273,8 +278,6 @@ void Connect(void const * argument)
 void StartTask03(void const * argument)
 {
   /* USER CODE BEGIN StartTask03 */
-  PathTracker_Init_MAP(&my_path_tracker);
-	PathTracker_StartRecording_MAP(&my_path_tracker, 0.0f, 0.0f);
   /* Infinite loop */
   for(;;)
   {
@@ -296,12 +299,8 @@ void StartTask03(void const * argument)
 //		my_printf(&huart4,"{C_filtered}%.2f,%.2f\r\n", pid_speed_C.target, C_encoder.speed_cm_s);
 //		my_printf(&huart4,"{D_filtered}%.2f,%.2f\r\n", pid_speed_D.target, D_encoder.speed_cm_s);
 		
-    my_printf(&huart4,"#%f,%d$"	,	f_yaw,(int)((A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f));
-		PathTracker_UpdateWithSpeed_MAP(&my_path_tracker, (A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f, f_yaw);
-    all_point_array = PathTracker_GetAllPoints_MAP(&my_path_tracker, &path_point_count);
-    path_point_count = PathTracker_FindShortestPath_MAP(&my_path_tracker, all_point_array[path_point_count-1].grid_x,all_point_array[path_point_count-1].grid_y );
-
-
+    // my_printf(&huart4,"#%f,%d$"	,	f_yaw,(int)((A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f));
+    my_printf(&huart4,"(%d,%d);",g_tracker.points[g_tracker.length-1].grid_x,g_tracker.points[g_tracker.length-1].grid_y);
     osDelay(100);
   }
   /* USER CODE END StartTask03 */
@@ -435,7 +434,6 @@ void StartTask08(void const * argument)
 void run_show(void const * argument)
 {
   /* USER CODE BEGIN run_show */
-  char buffer[100];
   uint16_t msg; // 用于接收消息
   /* Infinite loop */
   for(;;)
@@ -445,10 +443,12 @@ void run_show(void const * argument)
     {
       // 收到消息后执行打印功能
       osDelay(200); // 确保界面已经切换到 record 页面
-      snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", 0, 70, 480, 70, 0);
-      u2printf(buffer);
-      road_show(shortest_path_array, all_point_array, shortest_path_count, path_point_count);
+      g_shortest.length = 0;
+      SPT_BuildShortestPathFromHistory(g_tracker.points, g_tracker.length, &g_shortest, g_tracker.x_cm, g_tracker.y_cm);
+      road_show(g_shortest.points, g_tracker.points, g_shortest.length, g_tracker.length);
       printf("Record Command Sent\r\n");
+			// snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", 0, 70, 480, 70, 0);
+      // u2printf(buffer);
     }
   }
   /* USER CODE END run_show */
@@ -534,6 +534,28 @@ void recordShow(void const * argument)
     }
   }
   /* USER CODE END recordShow */
+}
+
+/* USER CODE BEGIN Header_records_cal */
+/**
+* @brief Function implementing the record_cal thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_records_cal */
+void records_cal(void const * argument)
+{
+  /* USER CODE BEGIN records_cal */
+  SPT_Init(&g_tracker);
+  /* Infinite loop */
+  for(;;)
+  {
+    int sp = (int)((A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f);
+    float yaw = f_yaw;
+    SPT_Update(&g_tracker, sp, yaw);
+    osDelay(10);
+  }
+  /* USER CODE END records_cal */
 }
 
 /* Private application code --------------------------------------------------*/

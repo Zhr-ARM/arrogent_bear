@@ -1,536 +1,336 @@
 /**
  * @file simple_path_tracker.c
- * @brief 迷宫路径追踪器实现 - 专为Keil和迷宫导航设计
- * @author Generated for STM32
- * @date 2025-01-09
+ * @brief 简单路径追踪器实现（速度 + Yaw -> 网格路径）
  */
 
 #include "simple_path_tracker.h"
-#include <string.h>
-#include <math.h>  // 添加数学函数库
+#include <math.h>
 
-/* ==================== 内部辅助函数 ==================== */
+/* 局部内联与静态函数，保证效率 */
 
-/**
- * @brief 实际坐标转换为网格坐标
- */
-static void real_to_grid_MAP(float real_x, float real_y, int16_t *grid_x, int16_t *grid_y)
-{
-    *grid_x = (int16_t)(real_x / GRID_SIZE_CM_MAP);
-    *grid_y = (int16_t)(real_y / GRID_SIZE_CM_MAP);
-    
-    // 确保在范围内
-    if (*grid_x < 0) *grid_x = 0;
-    if (*grid_x >= MAP_GRIDS_MAP) *grid_x = MAP_GRIDS_MAP - 1;
-    if (*grid_y < 0) *grid_y = 0;
-    if (*grid_y >= MAP_GRIDS_MAP) *grid_y = MAP_GRIDS_MAP - 1;
+/* 将连续坐标(cm)映射为网格坐标：按网格大小做四舍五入到最近格点 */
+static inline int16_t spt_to_grid(float v_cm) {
+    const float inv = 1.0f / SPT_GRID_SIZE_CM;
+    float g = v_cm * inv;
+    /* 自定义的就近取整：等价 roundf，但避免引入额外库 */
+    if (g >= 0.0f) g = (float)((int)(g + 0.5f));
+    else           g = (float)((int)(g - 0.5f));
+    return (int16_t)g;
 }
 
-/**
- * @brief 网格坐标转换为实际坐标(网格中心点)
- */
-static void grid_to_real_MAP(int16_t grid_x, int16_t grid_y, float *real_x, float *real_y)
-{
-    *real_x = grid_x * GRID_SIZE_CM_MAP + GRID_SIZE_CM_MAP / 2.0f;
-    *real_y = grid_y * GRID_SIZE_CM_MAP + GRID_SIZE_CM_MAP / 2.0f;
+/* 安全追加一个网格点到数组（若满则忽略） */
+static inline void spt_push_point(SPT_Tracker* t, int16_t gx, int16_t gy) {
+    if (t->length >= SPT_MAX_POINTS) return;
+    t->points[t->length].grid_x = gx;
+    t->points[t->length].grid_y = gy;
+    t->length++;
 }
 
-/**
- * @brief 设置网格为已访问
- */
-static void set_grid_visited_MAP(PathTracker_MAP *tracker, int16_t grid_x, int16_t grid_y)
-{
-    if (grid_x < 0 || grid_x >= MAP_GRIDS_MAP || grid_y < 0 || grid_y >= MAP_GRIDS_MAP) {
+/* 用Bresenham算法从上一个点连到新点（不重复包含起点，仅追加中间点与终点） */
+static void spt_connect_line(SPT_Tracker* t, int16_t x0, int16_t y0, int16_t x1, int16_t y1) {
+    int dx = (x1 > x0) ? (x1 - x0) : (x0 - x1);
+    int sx = (x0 < x1) ? 1 : -1;
+    int dy = (y1 > y0) ? (y0 - y1) : (y1 - y0); /* 注意 dy 取反用于经典写法 */
+    int sy = (y0 < y1) ? 1 : -1;
+    int err = dx + dy; /* err = dx + dy(已为负) */
+
+    int x = x0;
+    int y = y0;
+
+    /* 迭代，跳过第一个点(避免重复)，直到到达终点 */
+    for (;;) {
+        if (x == x1 && y == y1) {
+            /* 终点：追加 */
+            spt_push_point(t, (int16_t)x, (int16_t)y);
+            break;
+        }
+
+        int e2 = err << 1;
+        if (e2 >= dy) { err += dy; x += sx; }
+        if (e2 <= dx) { err += dx; y += sy; }
+
+        /* 跳过起点后每一步都写入 */
+        if (!(x == x0 && y == y0)) {
+            /* 若达到终点，循环开头也会写入，这里不提前 break 以保持代码简洁 */
+            if (x == x1 && y == y1) continue; /* 终点写在循环顶部 */
+            spt_push_point(t, (int16_t)x, (int16_t)y);
+        }
+    }
+}
+
+void SPT_Init(SPT_Tracker* tracker) {
+    if (!tracker) return;
+    tracker->x_cm = 0.0f;
+    tracker->y_cm = 0.0f;
+    tracker->last_grid_x = 0;
+    tracker->last_grid_y = 0;
+    tracker->has_last = 0;
+    tracker->length = 0;
+
+    /* 将原点映射网格并作为第一个点 */
+    int16_t gx = spt_to_grid(0.0f);
+    int16_t gy = spt_to_grid(0.0f);
+    spt_push_point(tracker, gx, gy);
+    tracker->last_grid_x = gx;
+    tracker->last_grid_y = gy;
+    tracker->has_last = 1;
+}
+
+void SPT_Update(SPT_Tracker* tracker, int speed_cm_s, float yaw_deg) {
+    if (!tracker) return;
+
+    /* 限幅速度 */
+    if (speed_cm_s >  SPT_MAX_SPEED_CM_S) speed_cm_s =  SPT_MAX_SPEED_CM_S;
+    if (speed_cm_s < -SPT_MAX_SPEED_CM_S) speed_cm_s = -SPT_MAX_SPEED_CM_S;
+
+    /* 时间步长(s) */
+    const float dt = ((float)SPT_UPDATE_INTERVAL_MS) * 0.001f;
+
+    /* 坐标系：yaw=0 -> +Y；左转(+yaw) -> -X，右转(-yaw) -> +X
+       因此：
+         dx = speed * sin(-yaw) = -speed * sin(yaw)
+         dy = speed * cos(yaw)
+       其中 yaw 单位为度。*/
+    const float rad = yaw_deg * 3.1415926f / 180.0f;
+    const float s = (float)speed_cm_s;
+    const float dx = (-s) * sinf(rad) * dt;
+    const float dy = ( s) * cosf(rad) * dt;
+
+    tracker->x_cm += dx;
+    tracker->y_cm += dy;
+
+    /* 计算新网格坐标（就近取整受 SPT_GRID_SIZE_CM 影响） */
+    int16_t gx = spt_to_grid(tracker->x_cm);
+    int16_t gy = spt_to_grid(tracker->y_cm);
+
+    if (!tracker->has_last) {
+        spt_push_point(tracker, gx, gy);
+        tracker->last_grid_x = gx;
+        tracker->last_grid_y = gy;
+        tracker->has_last = 1;
         return;
     }
-    
-    uint16_t bit_index = grid_y * MAP_GRIDS_MAP + grid_x;
-    uint16_t byte_index = bit_index / 8;
-    uint8_t bit_offset = bit_index % 8;
-    
-    if (byte_index < sizeof(tracker->visited_grid)) {
-        tracker->visited_grid[byte_index] |= (1 << bit_offset);
-    }
-}
 
-/**
- * @brief 检查网格是否已访问
- */
-static bool is_grid_visited_MAP(PathTracker_MAP *tracker, int16_t grid_x, int16_t grid_y)
-{
-    if (grid_x < 0 || grid_x >= MAP_GRIDS_MAP || grid_y < 0 || grid_y >= MAP_GRIDS_MAP) {
-        return false;
-    }
-    
-    uint16_t bit_index = grid_y * MAP_GRIDS_MAP + grid_x;
-    uint16_t byte_index = bit_index / 8;
-    uint8_t bit_offset = bit_index % 8;
-    
-    if (byte_index < sizeof(tracker->visited_grid)) {
-        return (tracker->visited_grid[byte_index] & (1 << bit_offset)) != 0;
-    }
-    
-    return false;
-}
-
-/**
- * @brief 查找相同网格坐标的已有路径点
- */
-static uint16_t find_point_by_grid_MAP(PathTracker_MAP *tracker, int16_t grid_x, int16_t grid_y)
-{
-    for (uint16_t i = 0; i < tracker->point_count; i++) {
-        if (tracker->path_points[i].grid_x == grid_x && 
-            tracker->path_points[i].grid_y == grid_y) {
-            return i;
-        }
-    }
-    return 0xFFFF; // 未找到
-}
-
-/**
- * @brief 添加两点之间的连接
- */
-static void add_connection_MAP(PathTracker_MAP *tracker, uint16_t from_index, uint16_t to_index)
-{
-    if (from_index >= tracker->point_count || to_index >= tracker->point_count) {
+    /* 与最新点重合则不更新 */
+    if (gx == tracker->last_grid_x && gy == tracker->last_grid_y) {
         return;
     }
-    
-    MapPoint_MAP *from_point = &tracker->path_points[from_index];
-    
-    // 检查是否已经连接
-    for (uint8_t i = 0; i < from_point->connection_count; i++) {
-        if (from_point->connected[i] == to_index) {
-            return; // 已经连接
-        }
-    }
-    
-    // 添加连接
-    if (from_point->connection_count < 4) {
-        from_point->connected[from_point->connection_count] = to_index;
-        from_point->connection_count++;
-    }
-}
 
-/* ==================== 公共API实现 ==================== */
+    /* 若某一轴相同，直接按该轴方向逐格补点（包含终点，不重复起点） */
+    if (gx == tracker->last_grid_x || gy == tracker->last_grid_y) {
+        int16_t x0 = tracker->last_grid_x;
+        int16_t y0 = tracker->last_grid_y;
+        int16_t x1 = gx;
+        int16_t y1 = gy;
 
-/**
- * @brief 初始化路径追踪器
- */
-void PathTracker_Init_MAP(PathTracker_MAP *tracker)
-{
-    if (tracker == NULL) return;
-    
-    memset(tracker, 0, sizeof(PathTracker_MAP));
-    
-    // 初始化所有连接为无效值
-    for (uint16_t i = 0; i < MAX_MAP_POINTS_MAP; i++) {
-        for (uint8_t j = 0; j < 4; j++) {
-            tracker->path_points[i].connected[j] = 0xFFFF;
-        }
-    }
-    
-    tracker->current_point_index = 0xFFFF;
-    tracker->is_initialized = true;
-}
-
-/**
- * @brief 开始路径记录
- */
-void PathTracker_StartRecording_MAP(PathTracker_MAP *tracker, float start_x, float start_y)
-{
-    if (tracker == NULL || !tracker->is_initialized) return;
-    
-    tracker->is_recording = true;
-    tracker->current_x = start_x;
-    tracker->current_y = start_y;
-    
-    // 转换为网格坐标
-    real_to_grid_MAP(start_x, start_y, &tracker->current_grid_x, &tracker->current_grid_y);
-    
-    // 清空所有数据
-    tracker->point_count = 0;
-    memset(tracker->visited_grid, 0, sizeof(tracker->visited_grid));
-    
-    // 添加起始点
-    if (tracker->point_count < MAX_MAP_POINTS_MAP) {
-        MapPoint_MAP *point = &tracker->path_points[tracker->point_count];
-        point->grid_x = tracker->current_grid_x;
-        point->grid_y = tracker->current_grid_y;
-        grid_to_real_MAP(point->grid_x, point->grid_y, &point->x, &point->y);
-        point->connection_count = 0;
-        
-        for (uint8_t i = 0; i < 4; i++) {
-            point->connected[i] = 0xFFFF;
-        }
-        
-        tracker->current_point_index = tracker->point_count;
-        tracker->point_count++;
-        
-        // 标记网格为已访问
-        set_grid_visited_MAP(tracker, tracker->current_grid_x, tracker->current_grid_y);
-    }
-}
-
-/**
- * @brief 结束路径记录
- */
-void PathTracker_StopRecording_MAP(PathTracker_MAP *tracker)
-{
-    if (tracker == NULL) return;
-    
-    tracker->is_recording = false;
-}
-
-/**
- * @brief 更新位置 (使用速度和航向角) - 返回是否创建了新网格点
- */
-uint8_t PathTracker_UpdateWithSpeed_MAP(PathTracker_MAP *tracker, float speed_cm_s, float yaw_degrees)
-{
-    if (tracker == NULL || !tracker->is_recording) return 0;
-    
-    // 记录更新前的点数量
-    uint16_t previous_count = tracker->point_count;
-    
-    // 对速度进行限幅
-    if (speed_cm_s > MAX_SPEED_CM_S_MAP) {
-        speed_cm_s = MAX_SPEED_CM_S_MAP;
-    } else if (speed_cm_s < -MAX_SPEED_CM_S_MAP) {
-        speed_cm_s = -MAX_SPEED_CM_S_MAP;
-    }
-    
-    // 将角度标准化到0-360度
-    while (yaw_degrees < 0) yaw_degrees += 360.0f;
-    while (yaw_degrees >= 360.0f) yaw_degrees -= 360.0f;
-    
-    // 将角度转换为弧度
-    float yaw_rad = yaw_degrees * 3.14159f / 180.0f;
-    
-    // 根据速度和航向角计算位移 (单位: 秒)
-    float delta_time_s = UPDATE_INTERVAL_MS_MAP / 1000.0f;
-    float dx = speed_cm_s * cosf(yaw_rad) * delta_time_s;
-    float dy = speed_cm_s * sinf(yaw_rad) * delta_time_s;
-    
-    // 更新当前位置
-    tracker->current_x += dx;
-    tracker->current_y += dy;
-    
-    // 确保在地图范围内
-    if (tracker->current_x < 0) tracker->current_x = 0;
-    if (tracker->current_x > MAP_SIZE_CM_MAP) tracker->current_x = MAP_SIZE_CM_MAP;
-    if (tracker->current_y < 0) tracker->current_y = 0;
-    if (tracker->current_y > MAP_SIZE_CM_MAP) tracker->current_y = MAP_SIZE_CM_MAP;
-    
-    // 调用原有的更新函数
-    PathTracker_Update_MAP(tracker, tracker->current_x, tracker->current_y);
-    
-    // 检查是否创建了新的网格点
-    return (tracker->point_count > previous_count) ? 1 : 0;
-}
-
-/**
- * @brief 更新位置 (核心函数)
- */
-void PathTracker_Update_MAP(PathTracker_MAP *tracker, float current_x, float current_y)
-{
-    if (tracker == NULL || !tracker->is_recording) return;
-    
-    // 更新当前位置
-    tracker->current_x = current_x;
-    tracker->current_y = current_y;
-    
-    // 转换为网格坐标
-    int16_t new_grid_x, new_grid_y;
-    real_to_grid_MAP(current_x, current_y, &new_grid_x, &new_grid_y);
-    
-    // 检查是否移动到新的网格
-    if (new_grid_x != tracker->current_grid_x || new_grid_y != tracker->current_grid_y) {
-        
-        uint16_t previous_point_index = tracker->current_point_index;
-        
-        // 查找是否已经有这个网格的点
-        uint16_t existing_point = find_point_by_grid_MAP(tracker, new_grid_x, new_grid_y);
-        
-        if (existing_point != 0xFFFF) {
-            // 已存在的点，建立连接
-            tracker->current_point_index = existing_point;
-        } else {
-            // 新点，添加到路径
-            if (tracker->point_count < MAX_MAP_POINTS_MAP) {
-                MapPoint_MAP *point = &tracker->path_points[tracker->point_count];
-                point->grid_x = new_grid_x;
-                point->grid_y = new_grid_y;
-                
-                // 使用网格中心点作为实际坐标(更规整)
-                grid_to_real_MAP(new_grid_x, new_grid_y, &point->x, &point->y);
-                
-                point->connection_count = 0;
-                
-                for (uint8_t i = 0; i < 4; i++) {
-                    point->connected[i] = 0xFFFF;
-                }
-                
-                tracker->current_point_index = tracker->point_count;
-                tracker->point_count++;
+        if (x0 == x1) {
+            int step = (y1 > y0) ? 1 : -1;
+            for (int16_t y = y0 + step; ; y += step) {
+                spt_push_point(tracker, x0, y);
+                if (y == y1) break;
+            }
+        } else { /* y0 == y1 */
+            int step = (x1 > x0) ? 1 : -1;
+            for (int16_t x = x0 + step; ; x += step) {
+                spt_push_point(tracker, x, y0);
+                if (x == x1) break;
             }
         }
-        
-        // 建立与前一个点的连接
-        if (previous_point_index != 0xFFFF && tracker->current_point_index != 0xFFFF) {
-            add_connection_MAP(tracker, previous_point_index, tracker->current_point_index);
-            add_connection_MAP(tracker, tracker->current_point_index, previous_point_index);
+    } else {
+        /* 无单轴连接，用Bresenham补齐：顺序为旧点->新点 */
+        spt_connect_line(tracker, tracker->last_grid_x, tracker->last_grid_y, gx, gy);
+    }
+
+    tracker->last_grid_x = gx;
+    tracker->last_grid_y = gy;
+}
+
+const SPT_Point* SPT_GetPath(const SPT_Tracker* tracker, int* out_len) {
+    if (!tracker) return 0;
+    if (out_len) *out_len = tracker->length;
+    return tracker->points;
+}
+
+/* ==================== 最短路径（基于历史点采样+BFS） ==================== */
+
+/* 简单哈希：将(grid_x,grid_y)映射到桶，用于快速存在性查询；
+   由于资源受限，使用固定大小开放定址表。 */
+typedef struct { int16_t x, y; int used; } spt_hash_entry_t;
+
+static unsigned spt_hash_key(int16_t x, int16_t y) {
+    /* 32位混合 */
+    unsigned ux = (unsigned)((uint16_t)x);
+    unsigned uy = (unsigned)((uint16_t)y);
+    unsigned h = ux * 2654435761u ^ (uy * 97531u + 0x9e3779b9u);
+    return h;
+}
+
+static int spt_hash_put(spt_hash_entry_t* table, int cap, int16_t x, int16_t y) {
+    unsigned h = spt_hash_key(x, y);
+    int i = (int)(h % (unsigned)cap);
+    for (int k = 0; k < cap; ++k) {
+        int idx = (i + k) % cap;
+        if (!table[idx].used) {
+            table[idx].x = x; table[idx].y = y; table[idx].used = 1; return 1;
         }
-        
-        // 更新当前网格坐标
-        tracker->current_grid_x = new_grid_x;
-        tracker->current_grid_y = new_grid_y;
-        
-        // 标记网格为已访问
-        set_grid_visited_MAP(tracker, new_grid_x, new_grid_y);
+        if (table[idx].x == x && table[idx].y == y) return 0; /* 已存在 */
     }
+    return 0; /* 满 */
 }
 
-/**
- * @brief 获取最新路径点
- */
-MapPoint_MAP* PathTracker_GetLatestPoint_MAP(PathTracker_MAP *tracker)
-{
-    if (tracker == NULL || tracker->point_count == 0) {
-        return NULL;
+static int spt_hash_has(const spt_hash_entry_t* table, int cap, int16_t x, int16_t y) {
+    unsigned h = spt_hash_key(x, y);
+    int i = (int)(h % (unsigned)cap);
+    for (int k = 0; k < cap; ++k) {
+        int idx = (i + k) % cap;
+        if (!table[idx].used) return 0; /* 提前失败 */
+        if (table[idx].x == x && table[idx].y == y) return 1;
     }
-    
-    return &tracker->path_points[tracker->point_count - 1];
-}
-
-/**
- * @brief 获取所有路径点数组
- */
-MapPoint_MAP* PathTracker_GetAllPoints_MAP(PathTracker_MAP *tracker, uint16_t *count)
-{
-    if (tracker == NULL || count == NULL) {
-        return NULL;
-    }
-    
-    *count = tracker->point_count;
-    return tracker->path_points;
-}
-
-/**
- * @brief 检查网格是否已访问过
- */
-bool PathTracker_IsGridVisited_MAP(PathTracker_MAP *tracker, int16_t grid_x, int16_t grid_y)
-{
-    if (tracker == NULL) return false;
-    
-    return is_grid_visited_MAP(tracker, grid_x, grid_y);
-}
-
-/**
- * @brief 获取指定点的相邻连接点
- */
-uint8_t PathTracker_GetConnections_MAP(PathTracker_MAP *tracker, uint16_t point_index, uint16_t connections[4])
-{
-    if (tracker == NULL || point_index >= tracker->point_count || connections == NULL) {
-        return 0;
-    }
-    
-    MapPoint_MAP *point = &tracker->path_points[point_index];
-    uint8_t valid_connections = 0;
-    
-    for (uint8_t i = 0; i < point->connection_count && i < 4; i++) {
-        if (point->connected[i] < tracker->point_count) {  // 确保连接索引有效
-            connections[valid_connections] = point->connected[i];
-            valid_connections++;
-        }
-    }
-    
-    return valid_connections;
-}
-
-/**
- * @brief 根据网格坐标查找点索引
- */
-int16_t PathTracker_FindPointByGrid_MAP(PathTracker_MAP *tracker, int8_t grid_x, int8_t grid_y)
-{
-    if (tracker == NULL) {
-        return -1;
-    }
-    
-    for (uint16_t i = 0; i < tracker->point_count; i++) {
-        if (tracker->path_points[i].grid_x == grid_x && 
-            tracker->path_points[i].grid_y == grid_y) {
-            return (int16_t)i;
-        }
-    }
-    
-    return -1;  // 未找到
-}
-
-/**
- * @brief 使用BFS算法查找最短路径
- */
-uint8_t PathTracker_FindShortestPath_MAP(PathTracker_MAP *tracker, int8_t target_grid_x, int8_t target_grid_y)
-{
-    if (tracker == NULL || tracker->point_count == 0) {
-        tracker->shortest_path_count = 0;
-        return 0;
-    }
-    
-    // 查找目标点
-    int16_t target_idx = PathTracker_FindPointByGrid_MAP(tracker, target_grid_x, target_grid_y);
-    if (target_idx < 0) {
-        tracker->shortest_path_count = 0;
-        return 0;
-    }
-    
-    // 查找起始点（最新点）
-    if (tracker->point_count == 0) {
-        tracker->shortest_path_count = 0;
-        return 0;
-    }
-    uint16_t start_idx = tracker->point_count - 1;
-    
-    // 如果起始点就是目标点
-    if (start_idx == (uint16_t)target_idx) {
-        tracker->shortest_path[0] = tracker->path_points[start_idx];
-        tracker->shortest_path_count = 1;
-        return 1;
-    }
-    
-    // BFS数据结构（使用数组模拟队列）
-    static uint16_t queue[MAX_MAP_POINTS_MAP];
-    static int16_t parent[MAX_MAP_POINTS_MAP];
-    static uint8_t visited[MAX_MAP_POINTS_MAP];
-    
-    // 初始化
-    for (uint16_t i = 0; i < tracker->point_count; i++) {
-        parent[i] = -1;
-        visited[i] = 0;
-    }
-    
-    // BFS
-    uint16_t queue_front = 0, queue_rear = 0;
-    queue[queue_rear++] = start_idx;
-    visited[start_idx] = 1;
-    
-    uint8_t found = 0;
-    while (queue_front < queue_rear && !found && queue_rear < MAX_MAP_POINTS_MAP) {
-        uint16_t current = queue[queue_front++];
-        
-        // 获取当前点的连接
-        uint16_t connections[4];
-        uint8_t conn_count = PathTracker_GetConnections_MAP(tracker, current, connections);
-        
-        for (uint8_t i = 0; i < conn_count; i++) {
-            uint16_t next = connections[i];
-            
-            if (!visited[next]) {
-                visited[next] = 1;
-                parent[next] = (int16_t)current;
-                if (queue_rear < MAX_MAP_POINTS_MAP) {  // 防止数组越界
-                    queue[queue_rear++] = next;
-                }
-                
-                if (next == (uint16_t)target_idx) {
-                    found = 1;
-                    break;
-                }
-            }
-        }
-    }
-    
-    if (!found) {
-        tracker->shortest_path_count = 0;
-        return 0;
-    }
-    
-    // 重建路径
-    static uint16_t path_indices[MAX_SHORTEST_PATH_MAP];
-    uint8_t path_length = 0;
-    int16_t current = target_idx;
-    
-    while (current != -1 && path_length < MAX_SHORTEST_PATH_MAP) {
-        path_indices[path_length++] = (uint16_t)current;
-        current = parent[current];
-    }
-    
-    // 反转路径（从起点到终点）
-    tracker->shortest_path_count = path_length;
-    for (uint8_t i = 0; i < path_length; i++) {
-        tracker->shortest_path[i] = tracker->path_points[path_indices[path_length - 1 - i]];
-    }
-    
-    return tracker->shortest_path_count;
-}
-
-/**
- * @brief 获取最短路径结果
- */
-uint8_t PathTracker_GetShortestPath_MAP(PathTracker_MAP *tracker, MapPoint_MAP *path_buffer, uint8_t buffer_size)
-{
-    if (tracker == NULL || path_buffer == NULL || buffer_size == 0) {
-        return 0;
-    }
-    
-    uint8_t copy_count = (tracker->shortest_path_count < buffer_size) ? 
-                        tracker->shortest_path_count : buffer_size;
-    
-    for (uint8_t i = 0; i < copy_count; i++) {
-        path_buffer[i] = tracker->shortest_path[i];
-    }
-    
-    return copy_count;
-}
-
-/**
- * @brief 获取所有历史路径点到指定数组（用于显示所有走过的路）
- */
-uint16_t PathTracker_GetAllHistoryPath_MAP(PathTracker_MAP *tracker, MapPoint_MAP *history_buffer, uint16_t buffer_size)
-{
-    if (tracker == NULL || history_buffer == NULL || buffer_size == 0) {
-        return 0;
-    }
-    
-    uint16_t copy_count = (tracker->point_count < buffer_size) ? 
-                         tracker->point_count : buffer_size;
-    
-    for (uint16_t i = 0; i < copy_count; i++) {
-        history_buffer[i] = tracker->path_points[i];
-    }
-    
-    return copy_count;
-}
-
-/**
- * @brief 一键获取最短路径并存储到用户数组（专为显示设计）
- * @param tracker 路径跟踪器
- * @param target_grid_x 目标网格X坐标
- * @param target_grid_y 目标网格Y坐标  
- * @param shortest_road_array 用户的最短路径数组
- * @param array_size 数组大小
- * @return 最短路径的实际长度（0表示未找到路径）
- */
-uint8_t PathTracker_GetShortestRoadToArray_MAP(PathTracker_MAP *tracker, 
-                                               int8_t target_grid_x, int8_t target_grid_y,
-                                               MapPoint_MAP *shortest_road_array, uint8_t array_size)
-{
-    if (tracker == NULL || shortest_road_array == NULL || array_size == 0) {
-        return 0;
-    }
-    
-    // 先查找最短路径
-    uint8_t path_length = PathTracker_FindShortestPath_MAP(tracker, target_grid_x, target_grid_y);
-    
-    if (path_length > 0) {
-        // 直接复制到用户数组
-        uint8_t copy_count = (path_length < array_size) ? path_length : array_size;
-        
-        for (uint8_t i = 0; i < copy_count; i++) {
-            shortest_road_array[i] = tracker->shortest_path[i];
-        }
-        
-        return copy_count;
-    }
-    
     return 0;
+}
+
+/* 线性查找采样数组中的(x,y)下标（规模有限，简单可靠） */
+static inline int spt_find_index_linear(const SPT_Point* sampled, int samp_cnt, int16_t x, int16_t y) {
+    for (int i = 0; i < samp_cnt; ++i) {
+        if (sampled[i].grid_x == x && sampled[i].grid_y == y) return i;
+    }
+    return -1;
+}
+
+void SPT_BuildShortestPathFromHistory(const SPT_Point* history, int history_len,
+                                      SPT_Tracker* out_path, float end_x_cm, float end_y_cm) {
+    if (!history || history_len <= 0 || !out_path) {
+        if (out_path) out_path->length = 0;
+        return;
+    }
+
+    /* 1) 采样步长：两倍网格 => 以“相隔2格”为采样点 */
+    const int STEP = 2; /* 2格步长 */
+
+    /* 将历史点放入哈希，便于判定“中点是否存在”与去重 */
+    /* 表容量设为最近的2倍幂或简单放大；为简化，取 4x history_len 上限，且最小256 */
+    int hist_cap = history_len * 4;
+    if (hist_cap < 256) hist_cap = 256;
+    spt_hash_entry_t* hist_set = (spt_hash_entry_t*)0;
+    spt_hash_entry_t* samp_set = (spt_hash_entry_t*)0;
+
+    /* 由于不使用动态分配，这里采用静态上限；根据单片机内存可调。
+       将默认值从 4096 降低为基于 SPT_MAX_POINTS 的可配置宏以减少 BSS 占用。
+       用户可在编译时通过定义 SPT_HASH_MAX 覆盖此值（例如 -DSPT_HASH_MAX=1024）。 */
+#ifndef SPT_HASH_MAX
+#define SPT_HASH_MAX (SPT_MAX_POINTS * 4)
+#endif
+    static spt_hash_entry_t s_hist[SPT_HASH_MAX];
+    static spt_hash_entry_t s_samp[SPT_HASH_MAX];
+    for (int i = 0; i < SPT_HASH_MAX; ++i) { s_hist[i].used = 0; s_samp[i].used = 0; }
+    hist_set = s_hist;
+    samp_set = s_samp;
+    hist_cap = SPT_HASH_MAX;
+
+    /* 填充历史集合 */
+    for (int i = 0; i < history_len; ++i) {
+        spt_hash_put(hist_set, hist_cap, history[i].grid_x, history[i].grid_y);
+    }
+
+    /* 2) 构建采样节点集：只保留满足 (gx % STEP == 0 && gy % STEP == 0) 的点 */
+    /* 同时收集到数组，以便后续 BFS 构图 */
+    static SPT_Point sampled[SPT_HASH_MAX];
+    int samp_cnt = 0;
+    for (int i = 0; i < history_len && samp_cnt < SPT_HASH_MAX; ++i) {
+        int16_t gx = history[i].grid_x;
+        int16_t gy = history[i].grid_y;
+        if (((gx % STEP) == 0) && ((gy % STEP) == 0)) {
+            if (!spt_hash_has(samp_set, SPT_HASH_MAX, gx, gy)) {
+                spt_hash_put(samp_set, SPT_HASH_MAX, gx, gy);
+                sampled[samp_cnt].grid_x = gx;
+                sampled[samp_cnt].grid_y = gy;
+                ++samp_cnt;
+            }
+        }
+    }
+
+    /* 起点、终点网格（终点由 cm -> grid） */
+    int16_t sx = 0, sy = 0;
+    int16_t ex = spt_to_grid(end_x_cm);
+    int16_t ey = spt_to_grid(end_y_cm);
+
+    /* 若起点或终点不在采样集，尝试加入（若其本身在历史集中） */
+    if (!spt_hash_has(samp_set, SPT_HASH_MAX, sx, sy) && spt_hash_has(hist_set, hist_cap, sx, sy)) {
+        spt_hash_put(samp_set, SPT_HASH_MAX, sx, sy);
+        sampled[samp_cnt].grid_x = sx; sampled[samp_cnt].grid_y = sy; ++samp_cnt;
+    }
+    if (!spt_hash_has(samp_set, SPT_HASH_MAX, ex, ey) && spt_hash_has(hist_set, hist_cap, ex, ey)) {
+        /* 若终点不是2格对齐，但在历史里存在，也纳入采样集 */
+        spt_hash_put(samp_set, SPT_HASH_MAX, ex, ey);
+        sampled[samp_cnt].grid_x = ex; sampled[samp_cnt].grid_y = ey; ++samp_cnt;
+    }
+
+    /* 在采样节点上做BFS。邻接规则：
+       - 只能相差2格的4邻域(x±2,y)或(x,y±2)
+       - 且要求“路径中点”(相差1格的位置)在原始历史集合中（保证连通性来自历史） */
+
+    if (samp_cnt == 0) { out_path->length = 0; return; }
+
+    int start_idx = spt_find_index_linear(sampled, samp_cnt, sx, sy);
+    int goal_idx  = spt_find_index_linear(sampled, samp_cnt, ex, ey);
+    if (start_idx < 0 || goal_idx < 0) { out_path->length = 0; return; }
+
+    /* BFS 队列与父指针 */
+    static int queue[SPT_HASH_MAX];
+    static int parent[SPT_HASH_MAX];
+    static unsigned char visited[SPT_HASH_MAX];
+    int qh = 0, qt = 0;
+    for (int i = 0; i < samp_cnt; ++i) { parent[i] = -1; visited[i] = 0; }
+
+    queue[qt++] = start_idx;
+    visited[start_idx] = 1;
+
+    /* 邻接方向 */
+    const int dir[4][2] = { {2,0}, {-2,0}, {0,2}, {0,-2} };
+    int found = 0;
+
+    while (qh < qt && !found) {
+        int u = queue[qh++];
+        int16_t ux = sampled[u].grid_x;
+        int16_t uy = sampled[u].grid_y;
+        for (int d = 0; d < 4; ++d) {
+            int16_t vx = (int16_t)(ux + dir[d][0]);
+            int16_t vy = (int16_t)(uy + dir[d][1]);
+
+            int v = spt_find_index_linear(sampled, samp_cnt, vx, vy);
+            if (v < 0) continue;
+            if (visited[v]) continue;
+
+            /* 中点必须在历史集合中：保证连边合法 */
+            int16_t mx = (int16_t)((ux + vx) / 2);
+            int16_t my = (int16_t)((uy + vy) / 2);
+            if (!spt_hash_has(hist_set, hist_cap, mx, my)) continue;
+
+            visited[v] = 1;
+            parent[v] = u;
+            queue[qt++] = v;
+            if (v == goal_idx) { found = 1; break; }
+        }
+    }
+
+    /* 重建路径到 out_path->points（顺序：起点->终点），仅更新 length */
+    out_path->length = 0;
+    if (!found) return;
+
+    /* 回溯 */
+    static int stack_idx[SPT_HASH_MAX];
+    int sp = 0;
+    for (int cur = goal_idx; cur >= 0; cur = parent[cur]) {
+        stack_idx[sp++] = cur;
+        if (cur == start_idx) break;
+        if (sp >= SPT_HASH_MAX) break;
+    }
+    /* 逆序输出：start->...->goal */
+    for (int i = sp - 1; i >= 0; --i) {
+        if (out_path->length >= SPT_MAX_POINTS) break;
+        int idx = stack_idx[i];
+        out_path->points[out_path->length].grid_x = sampled[idx].grid_x;
+        out_path->points[out_path->length].grid_y = sampled[idx].grid_y;
+        out_path->length++;
+    }
 }

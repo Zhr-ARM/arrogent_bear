@@ -79,3 +79,7 @@ xianshi\freertos.o: ../APP/encoder_app.h
 xianshi\freertos.o: ../APP/PID_app.h
 xianshi\freertos.o: ../Component/mydefine.h
 xianshi\freertos.o: ../APP/PID_app.h
+xianshi\freertos.o: ../APP/uart2.h
+xianshi\freertos.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\math.h
+xianshi\freertos.o: ../APP/record.h
+xianshi\freertos.o: ../Component/simple_path_tracker.h

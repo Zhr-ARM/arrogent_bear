@@ -1,0 +1,15 @@
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/queue.c
+xianshi\queue.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\queue.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\string.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+xianshi\queue.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\queue.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdint.h
+xianshi\queue.o: ../Core/Inc/FreeRTOSConfig.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+xianshi\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h

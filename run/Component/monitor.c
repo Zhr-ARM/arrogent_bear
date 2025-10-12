@@ -40,7 +40,7 @@ int my_printf(UART_HandleTypeDef *huart, const char *format, ...)
 	va_end(arg);
 
 	// ͨ�� HAL �ⷢ�� buffer �е�����
-	HAL_UART_Transmit(huart, (uint8_t *)buffer, (uint16_t)len, 0xFF);
+	HAL_UART_Transmit_DMA(huart, (uint8_t *)buffer, (uint16_t)len);
 	return len;
 }
 

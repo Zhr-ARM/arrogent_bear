@@ -1,0 +1,12 @@
+xianshi\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/list.c
+xianshi\list.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+xianshi\list.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\list.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdint.h
+xianshi\list.o: ../Core/Inc/FreeRTOSConfig.h
+xianshi\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+xianshi\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+xianshi\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+xianshi\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+xianshi\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+xianshi\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

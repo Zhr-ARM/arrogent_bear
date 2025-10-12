@@ -1,0 +1,15 @@
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c
+xianshi\event_groups.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+xianshi\event_groups.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\event_groups.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdint.h
+xianshi\event_groups.o: ../Core/Inc/FreeRTOSConfig.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
+xianshi\event_groups.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h

@@ -19,4 +19,5 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
     {
         uart2_tx_busy = 0;
     }
+
 }

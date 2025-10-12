@@ -1,0 +1,16 @@
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c
+xianshi\tasks.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\tasks.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\string.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+xianshi\tasks.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\tasks.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdint.h
+xianshi\tasks.o: ../Core/Inc/FreeRTOSConfig.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
+xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/stack_macros.h

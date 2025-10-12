@@ -76,6 +76,9 @@ void PathPlanning_Init(void) {
     
     // 标记起点已访问（使用位掩码标记从北方向进入）
     g_planner.map[g_planner.current.y][g_planner.current.x].visited_in = 1 << DIR_NORTH;
+	    // 标记起点从北方向离开（因为初始朝向北）
+    g_planner.map[g_planner.current.y][g_planner.current.x].visited_out = 1 << DIR_NORTH;
+	
     g_planner.coverage_count = 1;  // 已覆盖区域计数
     
     // 初始化运动控制状态机
@@ -100,7 +103,7 @@ void PathPlanning_Update(uint8_t cross_val) {
     if (cross_val >= 8) {
         uint8_t original_cross = cross_val;
         cross_val = 8;  // 强制设置为8（尽头）
-        my_printf(&huart4,"[DEBUG] f_cross=%d converted to 8 (dead end)\n", original_cross);
+        // my_printf(&huart4,"[DEBUG] f_cross=%d converted to 8 (dead end)\n", original_cross);
     }
 
 	Direction_t next_dir;           // 下一步移动方向
@@ -122,9 +125,9 @@ void PathPlanning_Update(uint8_t cross_val) {
                     // 延时稳定性检测：确保路口类型稳定
                     if (is_cross_stable(cross_val)) {
                         g_motion_ctrl.state = STATE_AT_CROSS;
-                        my_printf(&huart4,"[DEBUG] Cross detected and stable, entering AT_CROSS state\n");
+                        // my_printf(&huart4,"[DEBUG] Cross detected and stable, entering AT_CROSS state\n");
                     } else {
-                        my_printf(&huart4,"[DEBUG] Cross detected but unstable, waiting...\n");
+                        // my_printf(&huart4,"[DEBUG] Cross detected but unstable, waiting...\n");
                     }
                 }
             }
@@ -132,14 +135,14 @@ void PathPlanning_Update(uint8_t cross_val) {
             
         case STATE_AT_CROSS:  // 路口状态
             // 调试信息：显示当前路口类型
-            my_printf(&huart4,"[DEBUG] At cross: f_cross=%d, f_rho=%.2f\n", cross_val, f_rho);
+            // my_printf(&huart4,"[DEBUG] At cross: f_cross=%d, f_rho=%.2f\n", cross_val, f_rho);
             
             // 直接进行转向决策
             next_dir = PathPlanning_DecideNextMove(cross_val, f_rho);
 				
                  // 特殊处理：f_cross=6时，如果所有方向都走过，继续直行一步
             if (cross_val == 6 && next_dir == g_planner.current.dir) {
-                my_printf(&huart4,"[DEBUG] T-right cross (6): all directions visited, continuing straight\n");
+                // my_printf(&huart4,"[DEBUG] T-right cross (6): all directions visited, continuing straight\n");
                 
                 // 禁用PID控制，使用固定速度直行
                 pid_running = 0;
@@ -150,9 +153,9 @@ void PathPlanning_Update(uint8_t cross_val) {
                 MotorDriver_SetMotor(&car,MOTOR_D,15);
                 
                 // 直行一步（200ms）
-                HAL_Delay(200);
+                HAL_Delay(1000);
                 
-                my_printf(&huart4,"[DEBUG] T-right cross: straight step completed, returning to FOLLOW_LINE\n");
+                // my_printf(&huart4,"[DEBUG] T-right cross: straight step completed, returning to FOLLOW_LINE\n");
                 
                 // 重新启用PID控制，返回循线状态
                 pid_running = 1;
@@ -169,7 +172,7 @@ void PathPlanning_Update(uint8_t cross_val) {
                 
                 // 左转前额外走两步
                 if (diff == 3) {  // 左转
-                    my_printf(&huart4,"[DEBUG] Left turn detected, taking 2 extra steps\n");
+                    // my_printf(&huart4,"[DEBUG] Left turn detected, taking 2 extra steps\n");
                     
                     // 禁用PID控制，使用固定速度直行
                     pid_running = 0;
@@ -183,11 +186,11 @@ void PathPlanning_Update(uint8_t cross_val) {
                     HAL_Delay(75);  // 第一步
                     HAL_Delay(150);  // 第二步
                     
-                    my_printf(&huart4,"[DEBUG] Left turn extra steps completed\n");
+                    // my_printf(&huart4,"[DEBUG] Left turn extra steps completed\n");
                 }
                 
                 // 转弯前固定延时直行300ms
-                my_printf(&huart4,"[DEBUG] Pre-turn delay: continuing straight for 300ms\n");
+                // my_printf(&huart4,"[DEBUG] Pre-turn delay: continuing straight for 300ms\n");
                 
                 // 禁用PID控制，使用固定速度直行
                 pid_running = 0;
@@ -206,7 +209,7 @@ void PathPlanning_Update(uint8_t cross_val) {
                 // 需要转向：设置目标方向并切换到开始转向状态
                 g_motion_ctrl.target_dir = next_dir;
                 g_motion_ctrl.state = STATE_START_TURN;
-						my_printf(&huart4,"next_dir:%d",next_dir);
+						// my_printf(&huart4,"next_dir:%d",next_dir);
             } else {
                 // 直行：启用PID控制，直接返回循线状态
                 pid_running = 1;
@@ -228,8 +231,8 @@ void PathPlanning_Update(uint8_t cross_val) {
             execute_turn_action(g_planner.current.dir, g_motion_ctrl.target_dir);
 				
 				    // 调试信息：显示转向状态
-            my_printf(&huart4,"[DEBUG] Turning: f_yaw=%.2f, target_yaw=%.2f, turn_target=%.2f\n", 
-                     f_yaw, g_motion_ctrl.target_yaw, g_motion_ctrl.turn_target_angle);
+            // my_printf(&huart4,"[DEBUG] Turning: f_yaw=%.2f, target_yaw=%.2f, turn_target=%.2f\n", 
+                    //  f_yaw, g_motion_ctrl.target_yaw, g_motion_ctrl.turn_target_angle);
                                
             // 根据目标角度确定转向类型（顺时针为负值）
             if (fabs(g_motion_ctrl.target_yaw - 0.0f) < 0.1f) {
@@ -253,8 +256,8 @@ void PathPlanning_Update(uint8_t cross_val) {
         case STATE_TURNING:  // 转向状态
 				
             // 调试信息：显示转向状态
-            my_printf(&huart4,"[DEBUG] Turning: f_yaw=%.2f, target_yaw=%.2f, turn_target=%.2f\n", 
-                    f_yaw, g_motion_ctrl.target_yaw, g_motion_ctrl.turn_target_angle);
+            // my_printf(&huart4,"[DEBUG] Turning: f_yaw=%.2f, target_yaw=%.2f, turn_target=%.2f\n", 
+            //         f_yaw, g_motion_ctrl.target_yaw, g_motion_ctrl.turn_target_angle);
             
             // 使用相对转向角度进行转向完成检测
             if (fabs(calculate_angle_error(f_yaw, g_motion_ctrl.turn_target_angle)) <= 5.0f) {
@@ -284,7 +287,7 @@ void PathPlanning_Update(uint8_t cross_val) {
 								PID_Init();
 								HAL_Delay(10);
                 
-                my_printf(&huart4,"[DEBUG] Turn completed, returning to follow line\n");
+                // my_printf(&huart4,"[DEBUG] Turn completed, returning to follow line\n");
             }
             break;
         case STATE_COMPLETE:  // 完成状态
@@ -387,7 +390,7 @@ Direction_t PathPlanning_DecideNextMove(uint8_t cross, float rho) {
             break;
             
         case 8:  // 摄像头未识别到黑线 - 尽头，需要掉头
-            my_printf(&huart4,"[DEBUG] Dead end detected (f_cross=8), preparing U-turn\n");
+            // my_printf(&huart4,"[DEBUG] Dead end detected (f_cross=8), preparing U-turn\n");
             available_dirs[dir_count++] = get_relative_direction(current_dir, 2);  // 掉头
             break;
             
@@ -522,8 +525,8 @@ void PathPlanning_UpdatePosition(Direction_t move) {
     uint8_t enter_mask = 1 << move;
     g_planner.map[g_planner.current.y][g_planner.current.x].visited_in |= enter_mask;
     
-    my_printf(&huart4,"[Position] Moved to (%d,%d) facing %d\n", 
-           g_planner.current.x, g_planner.current.y, g_planner.current.dir);
+    // my_printf(&huart4,"[Position] Moved to (%d,%d) facing %d\n", 
+        //    g_planner.current.x, g_planner.current.y, g_planner.current.dir);
 }
 
 
@@ -571,8 +574,8 @@ static void execute_turn_action(Direction_t from, Direction_t to) {
     while (g_motion_ctrl.turn_target_angle < -180.0f) g_motion_ctrl.turn_target_angle += 360.0f;
     
     // 调试信息
-    my_printf(&huart4,"[DEBUG] Turn action: from=%d to=%d, diff=%d, target_yaw=%.2f, turn_target=%.2f\n", 
-             from, to, diff, g_motion_ctrl.target_yaw, g_motion_ctrl.turn_target_angle);
+    // my_printf(&huart4,"[DEBUG] Turn action: from=%d to=%d, diff=%d, target_yaw=%.2f, turn_target=%.2f\n", 
+            //  from, to, diff, g_motion_ctrl.target_yaw, g_motion_ctrl.turn_target_angle);
     
     // ✅ 不阻塞，只设置目标
     // 实际转向在STATE_TURNING状态中执行
@@ -623,7 +626,7 @@ static bool is_cross_stable(uint8_t cross_val) {
         g_stability.last_cross_val = cross_val;
         g_stability.stable_start_time = current_time;
         g_stability.is_stable = false;
-        my_printf(&huart4,"[DEBUG] Stability: Cross changed to %d, restarting timer\n", cross_val);
+        // my_printf(&huart4,"[DEBUG] Stability: Cross changed to %d, restarting timer\n", cross_val);
         return false;
     }
     
@@ -631,7 +634,7 @@ static bool is_cross_stable(uint8_t cross_val) {
     if (g_stability.stable_start_time == 0) {
         g_stability.stable_start_time = current_time;
         g_stability.is_stable = false;
-        my_printf(&huart4,"[DEBUG] Stability: Starting timer for cross=%d\n", cross_val);
+        // my_printf(&huart4,"[DEBUG] Stability: Starting timer for cross=%d\n", cross_val);
         return false;
     }
     
@@ -642,14 +645,14 @@ static bool is_cross_stable(uint8_t cross_val) {
     if (g_stability.stable_duration >= 110) {
         if (!g_stability.is_stable) {
             g_stability.is_stable = true;
-            my_printf(&huart4,"[DEBUG] Stability: Cross %d is now stable after %lu ms\n", 
-                     cross_val, g_stability.stable_duration);
+            // my_printf(&huart4,"[DEBUG] Stability: Cross %d is now stable after %lu ms\n", 
+            //          cross_val, g_stability.stable_duration);
         }
         return true;
     } else {
         g_stability.is_stable = false;
-        my_printf(&huart4,"[DEBUG] Stability: Cross %d stable for %lu ms (need 110ms)\n", 
-                 cross_val, g_stability.stable_duration);
+        // my_printf(&huart4,"[DEBUG] Stability: Cross %d stable for %lu ms (need 110ms)\n", 
+        //          cross_val, g_stability.stable_duration);
         return false;
     }
 }

@@ -122,20 +122,26 @@ void record_show_char(record_t record)
     u2printf(buffer);
 }
 
-void road_show(MapPoint_MAP *shpoints,MapPoint_MAP *history_points,uint16_t shcount,uint16_t hist_count)
+void road_show(SPT_Point *shpoints,SPT_Point *history_points,uint16_t shcount,uint16_t hist_count)
 {
     char buffer[100];
     osDelay(250);
     for(int i=0;i<shcount-1;i++)
     {
-        snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(shpoints[i].x*48/200)+10, (int)(shpoints[i].y*200/200)+70, (int)(shpoints[i+1].x*48/200)+10, (int)(shpoints[i+1].y*200/200)+70, 65535);
-        u2printf(buffer);
-        osDelay(10);
+        if(shpoints[i].grid_x!=shpoints[i+1].grid_x || shpoints[i].grid_y!=shpoints[i+1].grid_y)
+        {
+            snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(shpoints[i].grid_x*1+80), (int)(200-shpoints[i].grid_y*1), (int)(shpoints[i+1].grid_x*1+80), (int)(200-shpoints[i+1].grid_y*1), 0);
+            u2printf(buffer);
+            osDelay(20);
+        }
     }
     for(int i=0;i<hist_count-1;i++)
     {
-        snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(history_points[i].x*48/200)+10, (int)(history_points[i].y*200/200)+70, (int)(history_points[i+1].x*48/200)+10, (int)(history_points[i+1].y*200/200)+70, 65535);
-        u2printf(buffer);
-        osDelay(10);
+        if(history_points[i].grid_x!=history_points[i+1].grid_x || history_points[i].grid_y!=history_points[i+1].grid_y)
+        {
+            snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(history_points[i].grid_x*1)+180, (200-(int)(history_points[i].grid_y*1)), (int)(history_points[i+1].grid_x*1)+180, (200-(int)(history_points[i+1].grid_y*1)), 0);
+            u2printf(buffer);
+            osDelay(20);
+        }
     }
 }

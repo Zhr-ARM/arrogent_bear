@@ -1,0 +1,15 @@
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/timers.c
+xianshi\timers.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+xianshi\timers.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\timers.o: D:\KEIL_MDK\mdk\ARM\ARMCC\Bin\..\include\stdint.h
+xianshi\timers.o: ../Core/Inc/FreeRTOSConfig.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
+xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h

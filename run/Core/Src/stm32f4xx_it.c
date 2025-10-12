@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    stm32f4xx_it.c
-  * @brief   Interrupt Service Routines.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    stm32f4xx_it.c
+ * @brief   Interrupt Service Routines.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "mydefine.h"
+#include "pn532.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,10 +60,13 @@ extern QueueHandle_t showHandle;   // Declare showHandle as a QueueHandle_t
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_uart4_tx;
+extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart6;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
@@ -81,7 +85,7 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-   while (1)
+  while (1)
   {
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
@@ -168,6 +172,20 @@ void DebugMon_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles DMA1 stream4 global interrupt.
+  */
+void DMA1_Stream4_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Stream4_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream4_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_uart4_tx);
+  /* USER CODE BEGIN DMA1_Stream4_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream4_IRQn 1 */
+}
+
+/**
   * @brief This function handles USART1 global interrupt.
   */
 void USART1_IRQHandler(void)
@@ -210,6 +228,20 @@ void USART3_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles UART4 global interrupt.
+  */
+void UART4_IRQHandler(void)
+{
+  /* USER CODE BEGIN UART4_IRQn 0 */
+
+  /* USER CODE END UART4_IRQn 0 */
+  HAL_UART_IRQHandler(&huart4);
+  /* USER CODE BEGIN UART4_IRQn 1 */
+
+  /* USER CODE END UART4_IRQn 1 */
+}
+
+/**
   * @brief This function handles UART5 global interrupt.
   */
 void UART5_IRQHandler(void)
@@ -237,16 +269,30 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE END TIM6_DAC_IRQn 1 */
 }
 
+/**
+  * @brief This function handles USART6 global interrupt.
+  */
+void USART6_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART6_IRQn 0 */
+
+  /* USER CODE END USART6_IRQn 0 */
+  HAL_UART_IRQHandler(&huart6);
+  /* USER CODE BEGIN USART6_IRQn 1 */
+
+  /* USER CODE END USART6_IRQn 1 */
+}
+
 /* USER CODE BEGIN 1 */
-uint8_t u2temp=0;
+uint8_t u2temp = 0;
 extern SemaphoreHandle_t xUartSemaphore;
 extern volatile uint8_t uart_processing;
 void u2_calculate(uint8_t data)
 {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  static uint8_t record_index = 0; // 用于检测 "record"
+  static uint8_t record_index = 0;  // 用于检测 "record"
   static uint8_t connect_index = 0; // 用于检测 "connect"
-  static uint8_t show_index = 0; // 用于检测展示什么数据
+  static uint8_t show_index = 0;    // 用于检测展示什么数据
   // 检测 "record"
   if (data == 'r' && record_index == 0)
   {
@@ -314,7 +360,7 @@ void u2_calculate(uint8_t data)
     /* 释放信号量 */
     if (xUartSemaphore != NULL)
     {
-      if(uart_processing == 0) // 仅当未在处理时才释放
+      if (uart_processing == 0) // 仅当未在处理时才释放
       {
         xSemaphoreGiveFromISR(xUartSemaphore, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -327,11 +373,11 @@ void u2_calculate(uint8_t data)
     connect_index = 0;
   }
   // 检测 "show"
-  if(data == 's' && show_index == 0)
+  if (data == 's' && show_index == 0)
   {
     show_index++;
   }
-  else if(data<='16'&&data>'0'&&show_index==1)
+  else if (data <= '9' && data >= '1' && show_index == 1)
   {
     // 处理 show[x] 的情况
     uint16_t msg = (uint16_t)data;
@@ -350,14 +396,46 @@ void u2_calculate(uint8_t data)
 static uint8_t u1temp = 0;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  if(huart->Instance == USART2)
+  if (huart->Instance == USART2)
   {
     u2_calculate(u2temp);
-    HAL_UART_Receive_IT(&huart2,&u2temp,1); //开启下一次接收
+    HAL_UART_Receive_IT(&huart2, &u2temp, 1); // 开启下一次接收
   }
-  else if(huart->Instance == USART1)
+  else if (huart->Instance == USART1)
   {
-    HAL_UART_Receive_IT(&huart1,&u1temp,1); // 使用独立缓冲
+    HAL_UART_Receive_IT(&huart1, &u1temp, 1); // 使用独立缓冲
+  }
+  else if (huart->Instance == USART3)
+  {
+    Uart3_Receive();
+    HAL_UART_Receive_IT(&huart3, &Recv3, 1);
+  }
+  else if (huart->Instance == UART5)
+  {
+    RHO_Receive();
+    HAL_UART_Receive_IT(&huart5, &Recv5, 1);
+  }
+  else if (huart->Instance == USART6)
+  {
+
+    // 更新收货时间：记录下当前时间
+    uart6_rx_ticks = HAL_GetTick();
+
+    // 接收到1字节后，索引递增
+    uart6_rx_index++;
+    uart6_rx_flag = 1; // 设置接收完成标志
+
+    // 防止缓冲区溢出
+    if (uart6_rx_index >= 255)
+    {
+      uart6_rx_index = 254; // 保留最后一个位置
+    }
+
+    // 【关键】重新启动接收下一个字节
+    if (uart6_rx_index < 256)
+    {
+      HAL_UART_Receive_IT(&huart6, &uart6_rx_buffer[uart6_rx_index], 1);
+    }
   }
 }
 /* USER CODE END 1 */

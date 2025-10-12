@@ -86,7 +86,7 @@ static bool ReadBlockSelective(PN532 *pn532, uint8_t *uid, uint8_t uid_length,
         return false;
     }
     
-    vTaskDelay(50);
+    osDelay(50);
     
     sprintf(msg, "[Peak] 读取块%d...\r\n", block_addr);
     HAL_UART_Transmit(&huart4, (uint8_t*)msg, strlen(msg), 1000);
@@ -227,7 +227,7 @@ bool PN532_ReadPeakInfoSelective(PN532 *pn532, uint8_t *uid, uint8_t uid_length,
         return false;
     }
     
-    vTaskDelay(50);
+    osDelay(50);
     
     if (PN532_MifareClassicReadWithUID_UART(pn532, 1, block1_data, uid, uid_length) != PN532_STATUS_OK) {
         HAL_UART_Transmit(&huart4, (uint8_t*)"[Peak] 块1读取失败\r\n", 20, 1000);
@@ -253,7 +253,7 @@ bool PN532_ReadPeakInfoSelective(PN532 *pn532, uint8_t *uid, uint8_t uid_length,
             peak_info->peak2_channel, peak_info->peak2_channel);
     HAL_UART_Transmit(&huart4, (uint8_t*)msg, strlen(msg), 1000);
     
-    vTaskDelay(100);
+    osDelay(100);
     
     // 步骤2：读取峰1数据
     HAL_UART_Transmit(&huart4, (uint8_t*)"\r\n[Peak] 读取峰1数据...\r\n", 26, 1000);
@@ -273,7 +273,7 @@ bool PN532_ReadPeakInfoSelective(PN532 *pn532, uint8_t *uid, uint8_t uid_length,
         return false;
     }
     
-    vTaskDelay(100);
+    osDelay(100);
     
     // 步骤3：读取峰2数据
     HAL_UART_Transmit(&huart4, (uint8_t*)"\r\n[Peak] 读取峰2数据...\r\n", 26, 1000);
@@ -373,7 +373,7 @@ PN532_ReadResult PN532_ReadCard_Once(void) {
 
   HAL_UART_Transmit(&huart4, (uint8_t *)"[PN532] Step 3: Wait 50ms...\r\n", 30,
                     1000);
-  vTaskDelay(50); // 短暂等待，避免命令冲突
+  osDelay(50); // 短暂等待，避免命令冲突
 
   // 认证并读取所有扇区
   HAL_UART_Transmit(&huart4, (uint8_t *)"[PN532] Step 4: Authenticating...\r\n",
@@ -421,7 +421,7 @@ PN532_ReadResult PN532_ReadCard_Once(void) {
     HAL_UART_Transmit_DMA(&huart4, (uint8_t*)"\r\n========================================\r\n", 42);
     HAL_UART_Transmit_DMA(&huart4, (uint8_t*)"[PN532 Task] 任务启动\r\n", 24);
     HAL_UART_Transmit_DMA(&huart4, (uint8_t*)"========================================\r\n\r\n", 44);
-    vTaskDelay(500);
+    osDelay(500);
 
     // 初始化
     if (!pn532_initialized) {
@@ -447,7 +447,7 @@ PN532_ReadResult PN532_ReadCard_Once(void) {
     }
     HAL_UART_Transmit_DMA(&huart4, (uint8_t*)"\r\n", 2);
 
-    vTaskDelay(200);
+    osDelay(200);
 
     // 读取峰位信息
     PN532 pn532;
@@ -461,7 +461,7 @@ PN532_ReadResult PN532_ReadCard_Once(void) {
 
 task_end:
     HAL_UART_Transmit_DMA(&huart4, (uint8_t*)"\r\n[PN532 Task] 任务完成\r\n", 26);
-    vTaskDelay(1000);
+    osDelay(1000);
 
     PN532_ICCardTaskHandle = NULL;
     vTaskDelete(NULL);
@@ -525,9 +525,9 @@ static void PN532_Init_Hardware(void) {
   // 硬件复位
   HAL_UART_Transmit_DMA(&huart4, (uint8_t *)"[PN532 HW] Hardware reset...\r\n", 30);
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10, GPIO_PIN_RESET);
-  vTaskDelay(200);
+  osDelay(200);
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10, GPIO_PIN_SET);
-  vTaskDelay(3000);
+  osDelay(3000);
 
   // 发送唤醒 + SAM配置
   HAL_UART_Transmit_DMA(&huart4,
@@ -539,7 +539,7 @@ static void PN532_Init_Hardware(void) {
       0x00, 0x00, 0x00, 0x00, 0xFF, 0x03, 0xFD, 0xD4, 0x14, 0x01, 0x17, 0x00};
 
   HAL_UART_Transmit_DMA(&huart6, fused_wakeup_sam, sizeof(fused_wakeup_sam));
-  vTaskDelay(1000);
+  osDelay(1000);
 
   // 清空接收缓冲
   uint8_t dummy[256];
@@ -566,7 +566,7 @@ static bool PN532_SearchCard(uint8_t *uid, uint8_t *uid_length) {
   uint8_t card_search[] = {0x00, 0x00, 0xFF, 0x04, 0xFC, 0xD4,
                            0x4A, 0x01, 0x00, 0xE1, 0x00};
   HAL_UART_Transmit_DMA(&huart6, card_search, sizeof(card_search));
-  vTaskDelay(3000);
+  osDelay(3000);
 
   // 打印接收到的数据
   char msg[50];

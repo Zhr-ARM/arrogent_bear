@@ -290,10 +290,11 @@ void AdaptivePID_Update_D(void) {
 }
 
 uint8_t pid_running = 1; 
+extern volatile uint8_t system_started;  // 外部系统启动标志
 
 void PID_Task(void)
 {
-    if(!pid_running) return;
+    if(!pid_running || !system_started) return;
 
     float output_A, output_B,output_C,output_D;
 	

@@ -64,6 +64,8 @@ SPT_Tracker g_shortest;
 /* USER CODE BEGIN Variables */
 volatile uint8_t uart_processing = 0; // 0: idle, 1: processing
 uint8_t warn_flag = 0;       // 0: no warn, 1: warn
+volatile uint8_t system_started = 0;  // 0: 停止, 1: 启动、
+volatile uint8_t final_flag=0;  // 0: 否, 1: 终点停车
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId uart1Handle;
@@ -260,6 +262,11 @@ void Connect(void const * argument)
       u2printf("record.t2.txt=\"connect\"\xff\xff\xff");
       u2printf("setting.t2.txt=\"connect\"\xff\xff\xff");
 
+      // 启动小车系统
+      if (system_started == 0) {
+        system_started = 1;       
+      }      
+
       printf("Get Semaphore\r\n");
       /* 处理完成，允许再次响应 connect */
       uart_processing = 0;
@@ -300,7 +307,7 @@ void StartTask03(void const * argument)
 //		my_printf(&huart4,"{D_filtered}%.2f,%.2f\r\n", pid_speed_D.target, D_encoder.speed_cm_s);
 		
     // my_printf(&huart4,"#%f,%d$"	,	f_yaw,(int)((A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f));
-    my_printf(&huart4,"(%d,%d);",g_tracker.points[g_tracker.length-1].grid_x,g_tracker.points[g_tracker.length-1].grid_y);
+    //my_printf(&huart4,"(%d,%d);",g_tracker.points[g_tracker.length-1].grid_x,g_tracker.points[g_tracker.length-1].grid_y);
     osDelay(100);
   }
   /* USER CODE END StartTask03 */
@@ -400,7 +407,10 @@ void StartTask08(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		PathPlanning_Update(f_cross);
+    // 只有在系统启动时才执行路径规划
+    if(system_started) {
+      PathPlanning_Update(f_cross);
+    }
 			
     osDelay(10);
   }
@@ -480,12 +490,21 @@ void Warn(void const * argument)
     }
     if(warn_flag == 1)
     {
+		//识别到IC卡，停止小车
+		system_started = 0;
+		MotorDriver_StopAll(&car);
+
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
     osDelay(500);
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
     osDelay(500);
+
+ 		if(!final_flag){
+		//结束报警，启动小车
+		system_started = 1;
+		}   
     }
     else 
     {

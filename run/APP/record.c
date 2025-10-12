@@ -11,6 +11,15 @@ uint16_t hist_count = 0;             // 历史路径长度
 
 record_t co60_record={"Co60","1173keV","1332keV",106,121,1173,1332,150,50,149,49};
 record_t co57_record={"Co57","122keV","136keV",10,14,122,136,65,25,7,4};
+record_t Ba133_record={"Ba133","81keV","356keV",7,32,80,356,0,0,0,0};
+record_t K40_record={"K40","1460keV","",132,0,1460,0,0,0,0,0};
+record_t H3_record={"H3","16keV","",1,0,16,0,0,0,0,0};
+record_t C14_record={"C14","50KeV","",4,0,50,0,0,0,0,0};
+record_t Sr90_record={"Sr90","180KeV","",16,0,180,0,0,0,0,0};
+record_t Pu239_record={"Pu239","5156KeV","",469,0,5156,0,0,0,0,0};
+record_t Am241_record={"Am241","5485KeV","",499,0,5485,0,0,0,0,0};
+record_t Pu242_record={"Pu242","4902KeV","",446,0,4902,0,0,0,0,0};
+record_t Cf252_record={"Cf252","6118KeV","",557,0,6118,0,0,0,0,0};
 
 uint16_t x_cal(uint16_t x)
 {

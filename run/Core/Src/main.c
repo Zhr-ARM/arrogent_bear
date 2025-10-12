@@ -59,7 +59,8 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+extern MotorDriver_t car;
+extern volatile uint8_t system_started;
 /* USER CODE END 0 */
 
 /**
@@ -115,6 +116,9 @@ int main(void)
 	Kalman_Init(); // 初始化卡尔曼滤波器
 	PathPlanning_Init();// 初始化路径规划系统
   
+    // 初始化时确保小车停止
+  system_started = 0;
+  MotorDriver_StopAll(&car);
 	
   uint8_t temp;
   HAL_UART_Receive_IT(&huart2,&temp,1); //开启第一次接收

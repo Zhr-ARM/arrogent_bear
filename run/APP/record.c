@@ -8,7 +8,7 @@
 
 uint8_t shortest_count = 0;          // 最短路径长度
 uint16_t hist_count = 0;             // 历史路径长度
-
+uint8_t record_num = 2;               // 记录次数
 record_t co60_record={"Co60","1173keV","1332keV",106,121,1173,1332,150,50,149,49};
 record_t co57_record={"Co57","122keV","136keV",10,14,122,136,65,25,7,4};
 record_t Ba133_record={"Ba133","81keV","356keV",7,32,80,356,0,0,0,0};
@@ -152,5 +152,143 @@ void road_show(SPT_Point *shpoints,SPT_Point *history_points,uint16_t shcount,ui
             u2printf(buffer);
             osDelay(20);
         }
+    }
+}
+
+void history_cal1(uint8_t count)
+{
+    if(count==1)
+        u2printf("t4.txt+=t14.txt\xff\xff\xff");
+    else if(count==2)
+        u2printf("t5.txt+=t14.txt\xff\xff\xff");
+    else if(count==3)
+        u2printf("t11.txt+=t14.txt\xff\xff\xff");
+    else if(count==4)
+        u2printf("t7.txt+=t14.txt\xff\xff\xff");
+    else if(count==5)
+        u2printf("t12.txt+=t14.txt\xff\xff\xff");
+    else if(count==6)
+        u2printf("t13.txt+=t14.txt\xff\xff\xff");
+}
+
+void history_cal2(uint8_t count)
+{
+    if(count==7)
+        u2printf("t4.txt+=t14.txt\xff\xff\xff");
+    else if(count==8)
+        u2printf("t5.txt+=t14.txt\xff\xff\xff");
+    else if(count==9)
+        u2printf("t11.txt+=t14.txt\xff\xff\xff");
+    else if(count==10)
+        u2printf("t7.txt+=t14.txt\xff\xff\xff");
+    else if(count==11)
+        u2printf("t12.txt+=t14.txt\xff\xff\xff");
+    else if(count==12)
+        u2printf("t13.txt+=t14.txt\xff\xff\xff");
+}
+
+void history_show1_record(record_t record,uint8_t count)
+{
+    char buffer[100];
+    if(count>=6)
+        count=6;
+    for(uint8_t i=1;i<=count;i++)
+    {
+    u2printf("covx n3.val,t14.txt,0,0\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("t14.txt=\"/\"\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n4.val,t14.txt,0,0\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("t14.txt=\"/\"\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n5.val,t14.txt,0,0\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n0.val,t14.txt,0,0\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("t14.txt=\":\"\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n1.val,t14.txt,0,0\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("t14.txt=\":\"\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n2.val,t14.txt,0,0\xff\xff\xff");
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    snprintf(buffer, sizeof(buffer), "t14.txt=\"%s Ch:%d Cnts:%d Ch:%d Cnts:%d\"\xff\xff\xff", record.txt, record.x1, record.max1, record.x2, record.max2);
+    u2printf(buffer);
+    history_cal1(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+    }
+}
+
+void history_show2_record(record_t record,uint8_t count)
+{
+    char buffer[100];
+    for(uint8_t i=7;i<=count;i++)
+    {
+    u2printf("covx n3.val,t14.txt,0,0\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("t14.txt=\"/\"\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n4.val,t14.txt,0,0\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("t14.txt=\"/\"\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n5.val,t14.txt,0,0\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n0.val,t14.txt,0,0\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("t14.txt=\":\"\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n1.val,t14.txt,0,0\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("t14.txt=\":\"\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    u2printf("covx n2.val,t14.txt,0,0\xff\xff\xff");
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
+
+    snprintf(buffer, sizeof(buffer), "t14.txt=\"%s Ch:%d Cnts:%d Ch:%d Cnts:%d\"\xff\xff\xff", record.txt, record.x1, record.max1, record.x2, record.max2);
+    u2printf(buffer);
+    history_cal2(i);
+    u2printf("t14.txt=\"\"\xff\xff\xff");
     }
 }

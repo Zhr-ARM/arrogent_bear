@@ -79,8 +79,10 @@ osThreadId run_recordHandle;
 osThreadId RGBwarnHandle;
 osThreadId recordsHandle;
 osThreadId record_calHandle;
+osThreadId hisHandle;
 osMessageQId recordHandle;
 osMessageQId showHandle;
+osMessageQId historyHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -99,6 +101,7 @@ void run_show(void const * argument);
 void Warn(void const * argument);
 void recordShow(void const * argument);
 void records_cal(void const * argument);
+void history_show(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -148,6 +151,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of show */
   osMessageQDef(show, 1, uint16_t);
   showHandle = osMessageCreate(osMessageQ(show), NULL);
+
+  /* definition and creation of history */
+  osMessageQDef(history, 1, uint16_t);
+  historyHandle = osMessageCreate(osMessageQ(history), NULL);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -201,6 +208,10 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of record_cal */
   osThreadDef(record_cal, records_cal, osPriorityRealtime, 0, 1024);
   record_calHandle = osThreadCreate(osThread(record_cal), NULL);
+
+  /* definition and creation of his */
+  osThreadDef(his, history_show, osPriorityIdle, 0, 512);
+  hisHandle = osThreadCreate(osThread(his), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -575,6 +586,37 @@ void records_cal(void const * argument)
     osDelay(10);
   }
   /* USER CODE END records_cal */
+}
+
+/* USER CODE BEGIN Header_history_show */
+/**
+* @brief Function implementing the his thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_history_show */
+void history_show(void const * argument)
+{
+  /* USER CODE BEGIN history_show */
+  uint16_t msg; // 用于接收消息
+  /* Infinite loop */
+  for(;;)
+  {
+    // 等待消息队列
+    if (xQueueReceive(historyHandle, &msg, portMAX_DELAY) == pdTRUE)
+    { 
+      if(msg==1)
+      {
+        history_show1_record(co57_record,record_num);
+      }
+      else if(msg==2)
+      {
+        history_show2_record(co60_record,record_num);
+      }
+      osDelay(1000);
+    }
+  }
+  /* USER CODE END history_show */
 }
 
 /* Private application code --------------------------------------------------*/

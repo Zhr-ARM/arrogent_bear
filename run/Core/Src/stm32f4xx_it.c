@@ -26,6 +26,7 @@
 #include "semphr.h"
 #include "mydefine.h"
 #include "pn532.h"
+#include "record.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +48,7 @@
 /* USER CODE BEGIN PV */
 extern QueueHandle_t recordHandle; // Declare recordHandle as a QueueHandle_t
 extern QueueHandle_t showHandle;   // Declare showHandle as a QueueHandle_t
+extern QueueHandle_t historyHandle;   // Declare historyHandle as a QueueHandle_t
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -293,6 +295,8 @@ void u2_calculate(uint8_t data)
   static uint8_t record_index = 0;  // 用于检测 "record"
   static uint8_t connect_index = 0; // 用于检测 "connect"
   static uint8_t show_index = 0;    // 用于检测展示什么数据
+  static uint8_t history_index = 0; // 用于检测 "his"
+  static uint8_t num=0;
   // 检测 "record"
   if (data == 'r' && record_index == 0)
   {
@@ -380,6 +384,11 @@ void u2_calculate(uint8_t data)
   else if (data <= '9' && data >= '1' && show_index == 1)
   {
     // 处理 show[x] 的情况
+    show_index++; // 重置索引，准备下一次检测
+    num= data - '0';
+  }
+  else if(data == 0xff && show_index == 2)
+  {
     uint16_t msg = (uint16_t)data;
     if (showHandle != NULL)
     {
@@ -387,9 +396,59 @@ void u2_calculate(uint8_t data)
       portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
   }
-  else
+  else if(data <= '9' && data >= '0' && show_index == 2)
+  {
+    show_index++;
+  }
+  else if(data == 0xff && show_index == 3)
+  {
+    uint16_t msg = (uint16_t)(num*10+(data - '0'));
+    if (showHandle != NULL)
+    {
+      xQueueSendFromISR(showHandle, &msg, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+  }
+  else 
   {
     show_index = 0;
+  }
+
+  if(data == 'h' && history_index == 0)
+  {
+    history_index++;
+  }
+  else if(data == 'i' && history_index == 1)
+  {
+    history_index++;
+  }
+  else if(data == 's' && history_index == 2)
+  {
+    history_index++;
+  }
+  else if(data == '1' && history_index == 3)
+  {
+    /* 向消息队列发送消息 */
+    uint16_t msg = 1; // 消息内容（可以是任意值）
+    if (historyHandle != NULL)
+    {
+      xQueueSendFromISR(historyHandle, &msg, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+  }
+  else if(data == '2' && history_index == 3)
+  {
+    /* 向消息队列发送消息 */
+    uint16_t msg = 2; // 消息内容（可以是任意值）
+    if (historyHandle != NULL)
+    {
+      xQueueSendFromISR(historyHandle, &msg, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+  }
+  else
+  {
+    history_index = 0;
   }
 }
 

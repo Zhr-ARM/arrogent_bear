@@ -7,7 +7,7 @@ xianshi\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
 xianshi\stm32f4xx_it.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 xianshi\stm32f4xx_it.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h
 xianshi\stm32f4xx_it.o: ../Drivers/CMSIS/Include/core_cm4.h
-xianshi\stm32f4xx_it.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+xianshi\stm32f4xx_it.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
 xianshi\stm32f4xx_it.o: ../Drivers/CMSIS/Include/cmsis_version.h
 xianshi\stm32f4xx_it.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 xianshi\stm32f4xx_it.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -15,7 +15,7 @@ xianshi\stm32f4xx_it.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 xianshi\stm32f4xx_it.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 xianshi\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 xianshi\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-xianshi\stm32f4xx_it.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
+xianshi\stm32f4xx_it.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
 xianshi\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
 xianshi\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h
 xianshi\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h
@@ -44,11 +44,11 @@ xianshi\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue
 xianshi\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 xianshi\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 xianshi\stm32f4xx_it.o: ../Component/mydefine.h
-xianshi\stm32f4xx_it.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdio.h
-xianshi\stm32f4xx_it.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
-xianshi\stm32f4xx_it.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdarg.h
-xianshi\stm32f4xx_it.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
-xianshi\stm32f4xx_it.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdbool.h
+xianshi\stm32f4xx_it.o: D:\keli\ARM\ARMCC\Bin\..\include\stdio.h
+xianshi\stm32f4xx_it.o: D:\keli\ARM\ARMCC\Bin\..\include\string.h
+xianshi\stm32f4xx_it.o: D:\keli\ARM\ARMCC\Bin\..\include\stdarg.h
+xianshi\stm32f4xx_it.o: D:\keli\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\stm32f4xx_it.o: D:\keli\ARM\ARMCC\Bin\..\include\stdbool.h
 xianshi\stm32f4xx_it.o: ../Core/Inc/usart.h
 xianshi\stm32f4xx_it.o: ../Component/monitor.h
 xianshi\stm32f4xx_it.o: ../Component/mydefine.h
@@ -77,3 +77,10 @@ xianshi\stm32f4xx_it.o: ../APP/encoder_app.h
 xianshi\stm32f4xx_it.o: ../APP/PID_app.h
 xianshi\stm32f4xx_it.o: ../Component/mydefine.h
 xianshi\stm32f4xx_it.o: ../APP/PID_app.h
+xianshi\stm32f4xx_it.o: ../Core/Inc/pn532.h
+xianshi\stm32f4xx_it.o: ../APP/record.h
+xianshi\stm32f4xx_it.o: ../Component/simple_path_tracker.h
+xianshi\stm32f4xx_it.o: ../Core/Inc/pn532_task.h
+xianshi\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
+xianshi\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
+xianshi\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h

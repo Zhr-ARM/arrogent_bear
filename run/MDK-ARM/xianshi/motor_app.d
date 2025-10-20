@@ -1,12 +1,12 @@
 xianshi\motor_app.o: ..\APP\motor_app.c
 xianshi\motor_app.o: ..\APP\motor_app.h
 xianshi\motor_app.o: ../Component/mydefine.h
-xianshi\motor_app.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdio.h
-xianshi\motor_app.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
-xianshi\motor_app.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdarg.h
-xianshi\motor_app.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
-xianshi\motor_app.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
-xianshi\motor_app.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdbool.h
+xianshi\motor_app.o: D:\keli\ARM\ARMCC\Bin\..\include\stdio.h
+xianshi\motor_app.o: D:\keli\ARM\ARMCC\Bin\..\include\string.h
+xianshi\motor_app.o: D:\keli\ARM\ARMCC\Bin\..\include\stdarg.h
+xianshi\motor_app.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
+xianshi\motor_app.o: D:\keli\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\motor_app.o: D:\keli\ARM\ARMCC\Bin\..\include\stdbool.h
 xianshi\motor_app.o: ../Core/Inc/usart.h
 xianshi\motor_app.o: ../Core/Inc/main.h
 xianshi\motor_app.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
@@ -23,7 +23,7 @@ xianshi\motor_app.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 xianshi\motor_app.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 xianshi\motor_app.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 xianshi\motor_app.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-xianshi\motor_app.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
+xianshi\motor_app.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
 xianshi\motor_app.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
 xianshi\motor_app.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h
 xianshi\motor_app.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h

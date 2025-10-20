@@ -27,6 +27,7 @@
 #include "mydefine.h"
 #include "pn532.h"
 #include "record.h"
+#include "pn532_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,9 +47,16 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-extern QueueHandle_t recordHandle; // Declare recordHandle as a QueueHandle_t
-extern QueueHandle_t showHandle;   // Declare showHandle as a QueueHandle_t
-extern QueueHandle_t historyHandle;   // Declare historyHandle as a QueueHandle_t
+extern QueueHandle_t recordHandle;
+extern QueueHandle_t showHandle;
+extern QueueHandle_t historyHandle;
+
+// ========== USART6 相关变量声明 ==========
+extern uint32_t uart6_rx_ticks;
+extern uint16_t uart6_rx_index;
+extern uint8_t uart6_rx_buffer[256];
+extern volatile uint8_t uart6_rx_flag;
+// ========================================
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -289,14 +297,16 @@ void USART6_IRQHandler(void)
 uint8_t u2temp = 0;
 extern SemaphoreHandle_t xUartSemaphore;
 extern volatile uint8_t uart_processing;
+
 void u2_calculate(uint8_t data)
 {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  static uint8_t record_index = 0;  // 用于检测 "record"
-  static uint8_t connect_index = 0; // 用于检测 "connect"
-  static uint8_t show_index = 0;    // 用于检测展示什么数据
-  static uint8_t history_index = 0; // 用于检测 "his"
-  static uint8_t num=0;
+  static uint8_t record_index = 0;
+  static uint8_t connect_index = 0;
+  static uint8_t show_index = 0;
+  static uint8_t history_index = 0;
+  static uint8_t num = 0;
+
   // 检测 "record"
   if (data == 'r' && record_index == 0)
   {
@@ -321,8 +331,7 @@ void u2_calculate(uint8_t data)
   else if (data == 'd' && record_index == 5)
   {
     record_index = 0;
-    /* 向消息队列发送消息 */
-    uint16_t msg = 1; // 消息内容（可以是任意值）
+    uint16_t msg = 1;
     if (recordHandle != NULL)
     {
       xQueueSendFromISR(recordHandle, &msg, &xHigherPriorityTaskWoken);
@@ -333,6 +342,7 @@ void u2_calculate(uint8_t data)
   {
     record_index = 0;
   }
+
   // 检测 "connect"
   if (data == 'c' && connect_index == 0)
   {
@@ -361,10 +371,9 @@ void u2_calculate(uint8_t data)
   else if (data == 't' && connect_index == 6)
   {
     connect_index = 0;
-    /* 释放信号量 */
     if (xUartSemaphore != NULL)
     {
-      if (uart_processing == 0) // 仅当未在处理时才释放
+      if (uart_processing == 0)
       {
         xSemaphoreGiveFromISR(xUartSemaphore, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -376,6 +385,7 @@ void u2_calculate(uint8_t data)
   {
     connect_index = 0;
   }
+
   // 检测 "show"
   if (data == 's' && show_index == 0)
   {
@@ -383,63 +393,65 @@ void u2_calculate(uint8_t data)
   }
   else if (data <= '9' && data >= '1' && show_index == 1)
   {
-    // 处理 show[x] 的情况
-    show_index++; // 重置索引，准备下一次检测
-    num= data - '0';
+    show_index++;
+    num = data - '0';
   }
-  else if(data == 0xff && show_index == 2)
+  else if (data == 0xff && show_index == 2)
   {
-    uint16_t msg = (uint16_t)data;
+    show_index = 0;
+    uint16_t msg = (uint16_t)num;
     if (showHandle != NULL)
     {
       xQueueSendFromISR(showHandle, &msg, &xHigherPriorityTaskWoken);
       portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
   }
-  else if(data <= '9' && data >= '0' && show_index == 2)
+  else if (data <= '9' && data >= '0' && show_index == 2)
   {
     show_index++;
   }
-  else if(data == 0xff && show_index == 3)
+  else if (data == 0xff && show_index == 3)
   {
-    uint16_t msg = (uint16_t)(num*10+(data - '0'));
+    show_index = 0;
+    uint16_t msg = (uint16_t)(num * 10 + (data - '0'));
     if (showHandle != NULL)
     {
       xQueueSendFromISR(showHandle, &msg, &xHigherPriorityTaskWoken);
       portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
   }
-  else 
+  else
   {
     show_index = 0;
   }
 
-  if(data == 'h' && history_index == 0)
+  // 检测 "his"
+  if (data == 'h' && history_index == 0)
   {
     history_index++;
   }
-  else if(data == 'i' && history_index == 1)
+  else if (data == 'i' && history_index == 1)
   {
     history_index++;
   }
-  else if(data == 's' && history_index == 2)
+  else if (data == 's' && history_index == 2)
   {
     history_index++;
   }
-  else if(data == '1' && history_index == 3)
+  else if (data == '1' && history_index == 3)
   {
-    /* 向消息队列发送消息 */
-    uint16_t msg = 1; // 消息内容（可以是任意值）
+    history_index = 0;
+    uint16_t msg = 1;
     if (historyHandle != NULL)
     {
       xQueueSendFromISR(historyHandle, &msg, &xHigherPriorityTaskWoken);
       portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
   }
-  else if(data == '2' && history_index == 3)
+  else if (data == '2' && history_index == 3)
   {
-    /* 向消息队列发送消息 */
-    uint16_t msg = 2; // 消息内容（可以是任意值）
+    history_index = 0;
+    uint16_t msg = 2;
     if (historyHandle != NULL)
     {
       xQueueSendFromISR(historyHandle, &msg, &xHigherPriorityTaskWoken);
@@ -453,16 +465,17 @@ void u2_calculate(uint8_t data)
 }
 
 static uint8_t u1temp = 0;
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART2)
   {
     u2_calculate(u2temp);
-    HAL_UART_Receive_IT(&huart2, &u2temp, 1); // 开启下一次接收
+    HAL_UART_Receive_IT(&huart2, &u2temp, 1);
   }
   else if (huart->Instance == USART1)
   {
-    HAL_UART_Receive_IT(&huart1, &u1temp, 1); // 使用独立缓冲
+    HAL_UART_Receive_IT(&huart1, &u1temp, 1);
   }
   else if (huart->Instance == USART3)
   {
@@ -476,25 +489,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   }
   else if (huart->Instance == USART6)
   {
-
-    // 更新收货时间：记录下当前时间
+    // 更新接收时间戳
     uart6_rx_ticks = HAL_GetTick();
 
-    // 接收到1字节后，索引递增
+    // 接收完一个字节，索引递增
     uart6_rx_index++;
-    uart6_rx_flag = 1; // 设置接收完成标志
+    uart6_rx_flag = 1;
 
     // 防止缓冲区溢出
-    if (uart6_rx_index >= 255)
+    if (uart6_rx_index >= 256)
     {
-      uart6_rx_index = 254; // 保留最后一个位置
+      uart6_rx_index = 0; // 循环覆盖（根据需要调整）
     }
 
-    // 【关键】重新启动接收下一个字节
-    if (uart6_rx_index < 256)
-    {
-      HAL_UART_Receive_IT(&huart6, &uart6_rx_buffer[uart6_rx_index], 1);
-    }
+    // 继续接收下一个字节
+    HAL_UART_Receive_IT(&huart6, &uart6_rx_buffer[uart6_rx_index], 1);
   }
 }
 /* USER CODE END 1 */

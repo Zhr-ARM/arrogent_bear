@@ -1,9 +1,9 @@
 xianshi\cmsis_os.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c
-xianshi\cmsis_os.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
+xianshi\cmsis_os.o: D:\keli\ARM\ARMCC\Bin\..\include\string.h
 xianshi\cmsis_os.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
 xianshi\cmsis_os.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
-xianshi\cmsis_os.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
-xianshi\cmsis_os.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+xianshi\cmsis_os.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\cmsis_os.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
 xianshi\cmsis_os.o: ../Core/Inc/FreeRTOSConfig.h
 xianshi\cmsis_os.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
 xianshi\cmsis_os.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h

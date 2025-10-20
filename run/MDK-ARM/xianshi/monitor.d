@@ -1,12 +1,12 @@
 xianshi\monitor.o: ..\Component\monitor.c
 xianshi\monitor.o: ..\Component\monitor.h
-xianshi\monitor.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+xianshi\monitor.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
 xianshi\monitor.o: ..\Component\mydefine.h
-xianshi\monitor.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdio.h
-xianshi\monitor.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
-xianshi\monitor.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdarg.h
-xianshi\monitor.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
-xianshi\monitor.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdbool.h
+xianshi\monitor.o: D:\keli\ARM\ARMCC\Bin\..\include\stdio.h
+xianshi\monitor.o: D:\keli\ARM\ARMCC\Bin\..\include\string.h
+xianshi\monitor.o: D:\keli\ARM\ARMCC\Bin\..\include\stdarg.h
+xianshi\monitor.o: D:\keli\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\monitor.o: D:\keli\ARM\ARMCC\Bin\..\include\stdbool.h
 xianshi\monitor.o: ../Core/Inc/usart.h
 xianshi\monitor.o: ../Core/Inc/main.h
 xianshi\monitor.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
@@ -23,7 +23,7 @@ xianshi\monitor.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 xianshi\monitor.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 xianshi\monitor.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 xianshi\monitor.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-xianshi\monitor.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
+xianshi\monitor.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
 xianshi\monitor.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
 xianshi\monitor.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h
 xianshi\monitor.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h

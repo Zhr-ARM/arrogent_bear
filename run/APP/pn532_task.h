@@ -38,8 +38,47 @@ typedef struct {
     bool valid;                 // 数据是否有效
 } PeakInfo;
 
+
+
+/* 单张卡的有效数据结构 */
+typedef struct {
+    uint16_t peak_channels[2];    // 峰位道址（最多2个）
+    uint8_t peak_spectrums[2][3]; // 能谱数据（每个峰3字节）
+    uint8_t valid_peak_count;     // 有效峰位数量（1或2）
+    uint32_t timestamp;           // 读取时间戳
+    uint8_t uid[7];              // 卡片UID
+    uint8_t uid_length;          // UID长度
+} CardDataRecord;
+
+/* 卡片数据循环缓冲区 */
+typedef struct {
+    CardDataRecord records[12];   // 最多存储12张卡
+    uint8_t write_index;          // 写入位置（0-11）
+    uint8_t count;                // 当前存储数量（0-12）
+} CardDataBuffer;
+
+/* 全局缓冲区声明 */
+extern CardDataBuffer g_card_data_buffer;
+
+/* 缓冲区操作函数 */
+void CardBuffer_Init(void);
+bool CardBuffer_AddRecord(const PeakInfo *peak_info, const uint8_t *uid, uint8_t uid_length);
+bool CardBuffer_GetRecord(uint8_t index, CardDataRecord *record);
+uint8_t CardBuffer_GetCount(void);
+void CardBuffer_Clear(void);
+void CardBuffer_Print(void);
+
+// 卡片缓冲区打印函数
+void CardBuffer_PrintToUART4(void);           // 格式化打印
+void CardBuffer_PrintRawDataToUART4(void);    // 原始内存打印
+
+
 /* 全局变量声明 */
 extern PeakInfo g_peak_info;
+extern UART_HandleTypeDef huart4; // 调试串口
+extern UART_HandleTypeDef huart6; // PN532通信串口
+extern uint16_t uart6_rx_index;
+extern uint8_t uart6_rx_buffer[256];
 
 /* 函数声明 */
 bool PN532_ReadPeakInfoSelective(PN532 *pn532, uint8_t *uid, uint8_t uid_length, PeakInfo *peak_info);
@@ -82,6 +121,9 @@ bool PN532_GetBlock1Array(uint8_t *array, int *size);
  * @return 块2第一个字节的十进制值，如果数据无效返回0
  */
 uint8_t PN532_GetBlock2FirstByte(void);
+
+
+
 
 #ifdef __cplusplus
 }

@@ -139,7 +139,7 @@ void road_show(SPT_Point *shpoints,SPT_Point *history_points,uint16_t shcount,ui
     {
         if(shpoints[i].grid_x!=shpoints[i+1].grid_x || shpoints[i].grid_y!=shpoints[i+1].grid_y)
         {
-            snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(shpoints[i].grid_x*1+80), (int)(200-shpoints[i].grid_y*1), (int)(shpoints[i+1].grid_x*1+80), (int)(200-shpoints[i+1].grid_y*1), 0);
+            snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(shpoints[i].grid_x*SPT_GRID_SIZE_CM/2)+80, (200-(int)(shpoints[i].grid_y*SPT_GRID_SIZE_CM/2)), (int)(shpoints[i+1].grid_x*SPT_GRID_SIZE_CM/2)+80, (200-(int)(shpoints[i+1].grid_y*SPT_GRID_SIZE_CM/2)), 0);
             u2printf(buffer);
             osDelay(20);
         }
@@ -148,7 +148,7 @@ void road_show(SPT_Point *shpoints,SPT_Point *history_points,uint16_t shcount,ui
     {
         if(history_points[i].grid_x!=history_points[i+1].grid_x || history_points[i].grid_y!=history_points[i+1].grid_y)
         {
-            snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(history_points[i].grid_x*1)+180, (200-(int)(history_points[i].grid_y*1)), (int)(history_points[i+1].grid_x*1)+180, (200-(int)(history_points[i+1].grid_y*1)), 0);
+            snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(history_points[i].grid_x*SPT_GRID_SIZE_CM/2)+180, (200-(int)(history_points[i].grid_y*SPT_GRID_SIZE_CM/2)), (int)(history_points[i+1].grid_x*SPT_GRID_SIZE_CM/2)+180, (200-(int)(history_points[i+1].grid_y*SPT_GRID_SIZE_CM/2)), 0);
             u2printf(buffer);
             osDelay(20);
         }
@@ -244,6 +244,8 @@ void history_show1_record(record_t record,uint8_t count)
 void history_show2_record(record_t record,uint8_t count)
 {
     char buffer[100];
+    if(count>=7)
+    {
     for(uint8_t i=7;i<=count;i++)
     {
     u2printf("covx n3.val,t14.txt,0,0\xff\xff\xff");
@@ -290,5 +292,6 @@ void history_show2_record(record_t record,uint8_t count)
     u2printf(buffer);
     history_cal2(i);
     u2printf("t14.txt=\"\"\xff\xff\xff");
+    }
     }
 }

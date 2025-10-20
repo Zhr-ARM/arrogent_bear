@@ -1,7 +1,7 @@
 xianshi\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/croutine.c
 xianshi\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
-xianshi\croutine.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
-xianshi\croutine.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+xianshi\croutine.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\croutine.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
 xianshi\croutine.o: ../Core/Inc/FreeRTOSConfig.h
 xianshi\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
 xianshi\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h

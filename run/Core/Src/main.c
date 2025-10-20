@@ -23,7 +23,8 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-
+#include "pn532_task.h"
+#include "pn532.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "mydefine.h"
@@ -108,7 +109,7 @@ int main(void)
   MX_UART5_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
-	
+	HAL_UART_Receive_IT(&huart6, &uart6_rx_buffer[0], 1); // 开启USART6接收中断
 	Encoder_Init();
 	Motor_Init();
 	PID_Init();

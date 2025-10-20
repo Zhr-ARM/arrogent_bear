@@ -91,9 +91,9 @@ int PN532_CallFunction(PN532 *pn532, uint8_t command, uint8_t *response,
                        uint16_t params_length, uint32_t timeout);
 
 // UART专用函数接口
-int PN532_UART_WriteData(PN532 *pn532, uint8_t *data, uint16_t length);
-int PN532_UART_ReadData(PN532 *pn532, uint8_t *buff, uint16_t length);
-void PN532_Wakeup(PN532 *pn532);
+//int PN532_UART_WriteData(PN532 *pn532, uint8_t *data, uint16_t length);
+//int PN532_UART_ReadData(PN532 *pn532, uint8_t *buff, uint16_t length);
+//void PN532_Wakeup(PN532 *pn532);
 int PN532_ReadPassiveTarget_MFOC(PN532 *pn532, uint8_t *uid, uint8_t card_baud,
                                  uint32_t timeout);
 int PN532_MifareClassicAuthenticate_UART(PN532 *pn532, uint8_t *uid,
@@ -104,7 +104,7 @@ int PN532_MifareClassicRead_UART(PN532 *pn532, uint8_t block_number,
 int PN532_MifareClassicReadWithUID_UART(PN532 *pn532, uint8_t block_number,
                                         uint8_t *data, uint8_t *uid,
                                         uint8_t uid_length);
-int PN532_MFOC_Test(PN532 *pn532);
+
 
 // 新的UART命令发送和UID解析函数
 int pn532_write_command(uint8_t cmd, uint8_t *params, uint16_t params_len,
@@ -121,10 +121,15 @@ int pn532_call_quiet(UART_HandleTypeDef *huart, uint8_t cmd,
 // SAM配置函数
 int pn532_sam_configuration(UART_HandleTypeDef *huart);
 
-extern uint32_t uart6_rx_ticks;        // 最后接收时间
-extern uint16_t uart6_rx_index;        // 接收索引
-extern uint8_t uart6_rx_buffer[256]; // 接收缓冲区
-extern volatile uint8_t uart6_rx_flag; // 接收完成标志extern 
+// 解析读取响应函数
+int parse_read_response(uint8_t *response, int result, uint8_t *data);
+
+					 
+					 // 在文件末尾添加
+uint8_t PN532_GetStopFlag(void);
+uint8_t PN532_GetWarnFlag(void);
+uint32_t PN532_GetRemainingCooldown(void);
+void PN532_ClearFlags(void);
 
 #ifdef __cplusplus
 }

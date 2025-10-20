@@ -24,7 +24,7 @@
 
 /* 网格大小（cm/格），影响取整与重合判断 */
 #ifndef SPT_GRID_SIZE_CM
-#define SPT_GRID_SIZE_CM         2.0f
+#define SPT_GRID_SIZE_CM         5.0f
 #endif
 
 /* 任务调用周期（ms），决定位移 = 速度(cm/s) * (SPT_UPDATE_INTERVAL_MS/1000) */

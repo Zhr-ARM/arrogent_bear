@@ -92,9 +92,9 @@ virtualFolder:
         - path: ../../APP/uart2.h
         - path: ../../APP/pn532.c
         - path: ../../APP/pn532.h
-        - path: ../../APP/pn532_task.c
         - path: ../../APP/pn532_task.h
         - path: ../../APP/pn532_uart.h
+        - path: ../../APP/pn532_task.c
       folders: []
     - name: Component
       files:

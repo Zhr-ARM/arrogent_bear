@@ -296,30 +296,28 @@ void Connect(void const * argument)
 void StartTask03(void const * argument)
 {
   /* USER CODE BEGIN StartTask03 */
+  uint8_t i = 0;
   /* Infinite loop */
   for(;;)
   {
-//		my_printf(&huart4,"f_roll:	%f\r\n"	,	f_roll);
-//		my_printf(&huart4,"f_pitch:	%f\r\n"	,	f_pitch);
-//		my_printf(&huart4,"f_yaw:		%f\r\n"	,	f_yaw);
-//		my_printf(&huart4,"------------------------\r\n");
-//		
-//		my_printf(&huart4,"Left:%.2f Right:%.2f\r\n",B_encoder.speed_cm_s,A_encoder.speed_cm_s);
-//		my_printf(&huart4,"Left:%.2f Right:%.2f\r\n",C_encoder.speed_cm_s,D_encoder.speed_cm_s);
-//		my_printf(&huart4,"------------------------\r\n");
-//		
-//		my_printf(&huart4,"f_rho:	%f\r\n"	,	f_rho);
-//		my_printf(&huart4,"f_cross:%f\r\n",	f_cross);
-//		my_printf(&huart4,"------------------------\r\n");
-		
-//		my_printf(&huart4,"{A_filtered}%.2f,%.2f\r\n", pid_speed_A.target, A_encoder.speed_cm_s);
-//		my_printf(&huart4,"{B_filtered}%.2f,%.2f\r\n", pid_speed_B.target, B_encoder.speed_cm_s);
-//		my_printf(&huart4,"{C_filtered}%.2f,%.2f\r\n", pid_speed_C.target, C_encoder.speed_cm_s);
-//		my_printf(&huart4,"{D_filtered}%.2f,%.2f\r\n", pid_speed_D.target, D_encoder.speed_cm_s);
-		
-    // my_printf(&huart4,"#%f,%d$"	,	f_yaw,(int)((A_encoder.speed_cm_s+B_encoder.speed_cm_s+C_encoder.speed_cm_s+D_encoder.speed_cm_s)/4.0f));
-    //my_printf(&huart4,"(%d,%d);",g_tracker.points[g_tracker.length-1].grid_x,g_tracker.points[g_tracker.length-1].grid_y);
-    osDelay(100);
+    if(i > 5 && warn_flag == 1) // 每5秒检查一次警告状态
+    {
+      i = 0;
+      warn_flag = 0; // 假设有警告
+      if(!final_flag){
+		//结束报警，启动小车
+		  system_started = 1;
+		  }  
+    }
+    else if(warn_flag == 1)
+    {
+      i++;
+    }
+    else
+    {
+      i=0;
+    }
+    osDelay(1000);
   }
   /* USER CODE END StartTask03 */
 }
@@ -485,20 +483,9 @@ void run_show(void const * argument)
 void Warn(void const * argument)
 {
   /* USER CODE BEGIN Warn */
-  uint8_t i = 0;
   /* Infinite loop */
   for(;;)
   {
-    if(i++ > 5 && warn_flag == 0) // 每5秒检查一次警告状态
-    {
-      i = 0;
-      warn_flag = 1; // 假设有警告
-    }
-    else if(i++ > 5 && warn_flag == 1)
-    {
-      warn_flag = 0; // 清除警告标志
-      i=0;
-    }
     if(warn_flag == 1)
     {
 		//识别到IC卡，停止小车
@@ -511,11 +498,6 @@ void Warn(void const * argument)
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
     osDelay(500);
-
- 		if(!final_flag){
-		//结束报警，启动小车
-		system_started = 1;
-		}   
     }
     else 
     {

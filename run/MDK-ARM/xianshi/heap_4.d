@@ -1,8 +1,8 @@
 xianshi\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
-xianshi\heap_4.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
+xianshi\heap_4.o: D:\keli\ARM\ARMCC\Bin\..\include\stdlib.h
 xianshi\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
-xianshi\heap_4.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
-xianshi\heap_4.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+xianshi\heap_4.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\heap_4.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
 xianshi\heap_4.o: ../Core/Inc/FreeRTOSConfig.h
 xianshi\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
 xianshi\heap_4.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h

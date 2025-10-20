@@ -1,8 +1,8 @@
 xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/timers.c
-xianshi\timers.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
+xianshi\timers.o: D:\keli\ARM\ARMCC\Bin\..\include\stdlib.h
 xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
-xianshi\timers.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
-xianshi\timers.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+xianshi\timers.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\timers.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
 xianshi\timers.o: ../Core/Inc/FreeRTOSConfig.h
 xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
 xianshi\timers.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h

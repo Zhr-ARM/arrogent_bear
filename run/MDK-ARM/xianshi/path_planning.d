@@ -1,12 +1,12 @@
 xianshi\path_planning.o: ..\APP\path_planning.c
 xianshi\path_planning.o: ..\APP\path_planning.h
 xianshi\path_planning.o: ../Component/mydefine.h
-xianshi\path_planning.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdio.h
-xianshi\path_planning.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
-xianshi\path_planning.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdarg.h
-xianshi\path_planning.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
-xianshi\path_planning.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
-xianshi\path_planning.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdbool.h
+xianshi\path_planning.o: D:\keli\ARM\ARMCC\Bin\..\include\stdio.h
+xianshi\path_planning.o: D:\keli\ARM\ARMCC\Bin\..\include\string.h
+xianshi\path_planning.o: D:\keli\ARM\ARMCC\Bin\..\include\stdarg.h
+xianshi\path_planning.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
+xianshi\path_planning.o: D:\keli\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\path_planning.o: D:\keli\ARM\ARMCC\Bin\..\include\stdbool.h
 xianshi\path_planning.o: ../Core/Inc/usart.h
 xianshi\path_planning.o: ../Core/Inc/main.h
 xianshi\path_planning.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
@@ -23,7 +23,7 @@ xianshi\path_planning.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 xianshi\path_planning.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 xianshi\path_planning.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 xianshi\path_planning.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-xianshi\path_planning.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
+xianshi\path_planning.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
 xianshi\path_planning.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
 xianshi\path_planning.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h
 xianshi\path_planning.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h
@@ -64,4 +64,4 @@ xianshi\path_planning.o: ../APP/encoder_app.h
 xianshi\path_planning.o: ../APP/PID_app.h
 xianshi\path_planning.o: ../Component/mydefine.h
 xianshi\path_planning.o: ../APP/PID_app.h
-xianshi\path_planning.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\math.h
+xianshi\path_planning.o: D:\keli\ARM\ARMCC\Bin\..\include\math.h

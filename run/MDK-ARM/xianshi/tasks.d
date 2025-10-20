@@ -1,9 +1,9 @@
 xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c
-xianshi\tasks.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdlib.h
-xianshi\tasks.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
+xianshi\tasks.o: D:\keli\ARM\ARMCC\Bin\..\include\stdlib.h
+xianshi\tasks.o: D:\keli\ARM\ARMCC\Bin\..\include\string.h
 xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
-xianshi\tasks.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
-xianshi\tasks.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+xianshi\tasks.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
+xianshi\tasks.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
 xianshi\tasks.o: ../Core/Inc/FreeRTOSConfig.h
 xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
 xianshi\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h

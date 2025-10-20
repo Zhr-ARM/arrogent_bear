@@ -8,7 +8,7 @@ xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
 xianshi\record.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 xianshi\record.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h
 xianshi\record.o: ../Drivers/CMSIS/Include/core_cm4.h
-xianshi\record.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
+xianshi\record.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
 xianshi\record.o: ../Drivers/CMSIS/Include/cmsis_version.h
 xianshi\record.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 xianshi\record.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -16,7 +16,7 @@ xianshi\record.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 xianshi\record.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-xianshi\record.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
+xianshi\record.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
 xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
 xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h
 xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h
@@ -33,12 +33,10 @@ xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 xianshi\record.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 xianshi\record.o: ../Component/simple_path_tracker.h
-xianshi\record.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdbool.h
-xianshi\record.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\math.h
 xianshi\record.o: ..\APP\uart2.h
 xianshi\record.o: ../Core/Inc/usart.h
-xianshi\record.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
-xianshi\record.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdio.h
+xianshi\record.o: D:\keli\ARM\ARMCC\Bin\..\include\string.h
+xianshi\record.o: D:\keli\ARM\ARMCC\Bin\..\include\stdio.h
 xianshi\record.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
 xianshi\record.o: ../Core/Inc/FreeRTOSConfig.h
 xianshi\record.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h

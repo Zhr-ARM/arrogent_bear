@@ -1,8 +1,8 @@
 xianshi\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c
-xianshi\stream_buffer.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stdint.h
-xianshi\stream_buffer.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\string.h
+xianshi\stream_buffer.o: D:\keli\ARM\ARMCC\Bin\..\include\stdint.h
+xianshi\stream_buffer.o: D:\keli\ARM\ARMCC\Bin\..\include\string.h
 xianshi\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
-xianshi\stream_buffer.o: C:\Keil_v5\ARM\ARM_Compiler_5.06u7\Bin\..\include\stddef.h
+xianshi\stream_buffer.o: D:\keli\ARM\ARMCC\Bin\..\include\stddef.h
 xianshi\stream_buffer.o: ../Core/Inc/FreeRTOSConfig.h
 xianshi\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
 xianshi\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h

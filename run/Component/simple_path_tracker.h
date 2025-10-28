@@ -19,12 +19,12 @@
 
 /* 最大网格点数量（路径数组长度上限） */
 #ifndef SPT_MAX_POINTS
-#define SPT_MAX_POINTS           512
+#define SPT_MAX_POINTS           1024
 #endif
 
 /* 网格大小（cm/格），影响取整与重合判断 */
 #ifndef SPT_GRID_SIZE_CM
-#define SPT_GRID_SIZE_CM         5.0f
+#define SPT_GRID_SIZE_CM         4.0f
 #endif
 
 /* 任务调用周期（ms），决定位移 = 速度(cm/s) * (SPT_UPDATE_INTERVAL_MS/1000) */
@@ -35,6 +35,26 @@
 /* 速度限幅（cm/s） */
 #ifndef SPT_MAX_SPEED_CM_S
 #define SPT_MAX_SPEED_CM_S       25
+#endif
+
+/* 最短路径算法：采样因子（将网格坐标除以此值后取整再乘以此值） */
+#ifndef SPT_SAMPLE_FACTOR
+#define SPT_SAMPLE_FACTOR        2
+#endif
+
+/* 最短路径算法：采样后可通行点的最大数量 */
+#ifndef SPT_MAX_SAMPLED_POINTS
+#define SPT_MAX_SAMPLED_POINTS   256
+#endif
+
+/* 最短路径算法：BFS队列大小 */
+#ifndef SPT_BFS_QUEUE_SIZE
+#define SPT_BFS_QUEUE_SIZE       512
+#endif
+
+/* 最短路径算法：已访问节点数组大小 */
+#ifndef SPT_BFS_VISITED_SIZE
+#define SPT_BFS_VISITED_SIZE     512
 #endif
 
 /* ===================== 数据结构 ===================== */
@@ -71,10 +91,25 @@ void SPT_Update(SPT_Tracker* tracker, int speed_cm_s, float yaw_deg);
 /* 获取路径数组与长度（只读指针，长度写到out_len） */
 const SPT_Point* SPT_GetPath(const SPT_Tracker* tracker, int* out_len);
 
-/* 从历史网格点中（以2格为采样步长）构建起点(0,0)到终点(x,y, cm)的最短路径，
- * 结果写入 out_path->points 并更新 out_path->length（其余字段不改）。
- * 若不可达，则 length=0。history 为历史网格点数组，长度为 history_len。 */
-void SPT_BuildShortestPathFromHistory(const SPT_Point* history, int history_len,
-                                      SPT_Tracker* out_path, float end_x_cm, float end_y_cm);
+/**
+ * @brief 基于历史路径生成到终点的最短路径（BFS算法）
+ * 
+ * 算法步骤：
+ * 1. 对历史路径进行采样去重（除以SPT_SAMPLE_FACTOR取整再乘以SPT_SAMPLE_FACTOR）
+ * 2. 使用BFS四方向搜索从原点(0,0)到终点的最短路径
+ * 3. 只在采样后的可通行点之间移动
+ * 4. 如果终点不可达，则以历史路径最新点为终点重试
+ * 5. 仍不可达则返回-1
+ * 
+ * @param history_path 历史路径网格坐标（输入）
+ * @param shortest_path 最短路径结果（输出，会被清空重写）
+ * @param end_x 终点X网格坐标
+ * @param end_y 终点Y网格坐标
+ * @return 1=成功找到路径，0=终点不可达但找到到最新点的路径，-1=完全失败
+ */
+int SPT_FindShortestPath(const SPT_Tracker* history_path, 
+                         SPT_Tracker* shortest_path,
+                         int16_t end_x, 
+                         int16_t end_y);
 
 #endif /* SIMPLE_PATH_TRACKER_H */

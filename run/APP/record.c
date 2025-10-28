@@ -5,6 +5,7 @@
 #include "cmsis_os.h"
 #include <stdio.h>
 #include "simple_path_tracker.h"
+#include "math.h"
 
 uint8_t shortest_count = 0;          // 最短路径长度
 uint16_t hist_count = 0;             // 历史路径长度
@@ -131,26 +132,58 @@ void record_show_char(record_t record)
     u2printf(buffer);
 }
 
-void road_show(SPT_Point *shpoints,SPT_Point *history_points,uint16_t shcount,uint16_t hist_count)
-{
+void road_show(SPT_Point *shpoints, SPT_Point *history_points, uint16_t shcount, uint16_t hist_count) {
     char buffer[100];
     osDelay(250);
-    for(int i=0;i<shcount-1;i++)
-    {
-        if(shpoints[i].grid_x!=shpoints[i+1].grid_x || shpoints[i].grid_y!=shpoints[i+1].grid_y)
-        {
-            snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(shpoints[i].grid_x*SPT_GRID_SIZE_CM/2)+80, (200-(int)(shpoints[i].grid_y*SPT_GRID_SIZE_CM/2)), (int)(shpoints[i+1].grid_x*SPT_GRID_SIZE_CM/2)+80, (200-(int)(shpoints[i+1].grid_y*SPT_GRID_SIZE_CM/2)), 0);
-            u2printf(buffer);
-            osDelay(20);
+
+    // 定义线条宽度
+    const int line_width = 2; // 线条宽度（像素）
+
+    for (int i = 0; i < hist_count - 1; i++) {
+        if (history_points[i].grid_x != history_points[i + 1].grid_x || history_points[i].grid_y != history_points[i + 1].grid_y) {
+            int x0 = (int)(history_points[i].grid_x * SPT_GRID_SIZE_CM / 2) + 80;
+            int y0 = 200 - (int)(history_points[i].grid_y * SPT_GRID_SIZE_CM / 2);
+            int x1 = (int)(history_points[i + 1].grid_x * SPT_GRID_SIZE_CM / 2) + 80;
+            int y1 = 200 - (int)(history_points[i + 1].grid_y * SPT_GRID_SIZE_CM / 2);
+
+            // 计算法向量
+            int dx = x1 - x0;
+            int dy = y1 - y0;
+            float length = sqrtf(dx * dx + dy * dy);
+            float nx = -dy / length; // 法向量 x 分量
+            float ny = dx / length;  // 法向量 y 分量
+
+            for (int offset = -line_width; offset <= line_width; offset++) {
+                int offset_x = (int)(nx * offset);
+                int offset_y = (int)(ny * offset);
+                snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", x0 + offset_x, y0 + offset_y, x1 + offset_x, y1 + offset_y, 0);
+                u2printf(buffer);
+                osDelay(20);
+            }
         }
     }
-    for(int i=0;i<hist_count-1;i++)
-    {
-        if(history_points[i].grid_x!=history_points[i+1].grid_x || history_points[i].grid_y!=history_points[i+1].grid_y)
-        {
-            snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", (int)(history_points[i].grid_x*SPT_GRID_SIZE_CM/2)+180, (200-(int)(history_points[i].grid_y*SPT_GRID_SIZE_CM/2)), (int)(history_points[i+1].grid_x*SPT_GRID_SIZE_CM/2)+180, (200-(int)(history_points[i+1].grid_y*SPT_GRID_SIZE_CM/2)), 0);
-            u2printf(buffer);
-            osDelay(20);
+
+    for (int i = 0; i < shcount - 1; i++) {
+        if (shpoints[i].grid_x != shpoints[i + 1].grid_x || shpoints[i].grid_y != shpoints[i + 1].grid_y) {
+            int x0 = (int)(shpoints[i].grid_x * SPT_GRID_SIZE_CM / 2) + 80;
+            int y0 = 200 - (int)(shpoints[i].grid_y * SPT_GRID_SIZE_CM / 2);
+            int x1 = (int)(shpoints[i + 1].grid_x * SPT_GRID_SIZE_CM / 2) + 80;
+            int y1 = 200 - (int)(shpoints[i + 1].grid_y * SPT_GRID_SIZE_CM / 2);
+
+            // 计算法向量
+            int dx = x1 - x0;
+            int dy = y1 - y0;
+            float length = sqrtf(dx * dx + dy * dy);
+            float nx = -dy / length; // 法向量 x 分量
+            float ny = dx / length;  // 法向量 y 分量
+
+            for (int offset = -line_width; offset <= line_width; offset++) {
+                int offset_x = (int)(nx * offset);
+                int offset_y = (int)(ny * offset);
+                snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", x0 + offset_x, y0 + offset_y, x1 + offset_x, y1 + offset_y, 63488);
+                u2printf(buffer);
+                osDelay(20);
+            }
         }
     }
 }

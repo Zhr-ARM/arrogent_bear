@@ -151,186 +151,238 @@ const SPT_Point* SPT_GetPath(const SPT_Tracker* tracker, int* out_len) {
     return tracker->points;
 }
 
-/* ==================== 最短路径（基于历史点采样+BFS） ==================== */
+/* ===================== 最短路径算法实现 ===================== */
 
-/* 简单哈希：将(grid_x,grid_y)映射到桶，用于快速存在性查询；
-   由于资源受限，使用固定大小开放定址表。 */
-typedef struct { int16_t x, y; int used; } spt_hash_entry_t;
+/* 采样网格点结构 */
+typedef struct {
+    int16_t x;
+    int16_t y;
+} SampledPoint;
 
-static unsigned spt_hash_key(int16_t x, int16_t y) {
-    /* 32位混合 */
-    unsigned ux = (unsigned)((uint16_t)x);
-    unsigned uy = (unsigned)((uint16_t)y);
-    unsigned h = ux * 2654435761u ^ (uy * 97531u + 0x9e3779b9u);
-    return h;
+/* BFS节点结构 */
+typedef struct {
+    int16_t x;
+    int16_t y;
+    int16_t parent_idx;  /* 父节点索引，-1表示起点 */
+} BFSNode;
+
+/* 对网格坐标进行采样（除以因子取整再乘以因子） */
+static inline void spt_sample_point(int16_t grid_x, int16_t grid_y, int16_t* out_x, int16_t* out_y) {
+    *out_x = (grid_x / SPT_SAMPLE_FACTOR) * SPT_SAMPLE_FACTOR;
+    *out_y = (grid_y / SPT_SAMPLE_FACTOR) * SPT_SAMPLE_FACTOR;
 }
 
-static int spt_hash_put(spt_hash_entry_t* table, int cap, int16_t x, int16_t y) {
-    unsigned h = spt_hash_key(x, y);
-    int i = (int)(h % (unsigned)cap);
-    for (int k = 0; k < cap; ++k) {
-        int idx = (i + k) % cap;
-        if (!table[idx].used) {
-            table[idx].x = x; table[idx].y = y; table[idx].used = 1; return 1;
-        }
-        if (table[idx].x == x && table[idx].y == y) return 0; /* 已存在 */
-    }
-    return 0; /* 满 */
-}
-
-static int spt_hash_has(const spt_hash_entry_t* table, int cap, int16_t x, int16_t y) {
-    unsigned h = spt_hash_key(x, y);
-    int i = (int)(h % (unsigned)cap);
-    for (int k = 0; k < cap; ++k) {
-        int idx = (i + k) % cap;
-        if (!table[idx].used) return 0; /* 提前失败 */
-        if (table[idx].x == x && table[idx].y == y) return 1;
+/* 检查采样点是否已存在于数组中 */
+static int spt_sampled_exists(const SampledPoint* arr, int len, int16_t x, int16_t y) {
+    for (int i = 0; i < len; i++) {
+        if (arr[i].x == x && arr[i].y == y) return 1;
     }
     return 0;
 }
 
-/* 线性查找采样数组中的(x,y)下标（规模有限，简单可靠） */
-static inline int spt_find_index_linear(const SPT_Point* sampled, int samp_cnt, int16_t x, int16_t y) {
-    for (int i = 0; i < samp_cnt; ++i) {
-        if (sampled[i].grid_x == x && sampled[i].grid_y == y) return i;
+/* 检查BFS访问数组中是否已访问过某点 */
+static int spt_bfs_visited(const BFSNode* arr, int len, int16_t x, int16_t y) {
+    for (int i = 0; i < len; i++) {
+        if (arr[i].x == x && arr[i].y == y) return 1;
     }
-    return -1;
+    return 0;
 }
 
-void SPT_BuildShortestPathFromHistory(const SPT_Point* history, int history_len,
-                                      SPT_Tracker* out_path, float end_x_cm, float end_y_cm) {
-    if (!history || history_len <= 0 || !out_path) {
-        if (out_path) out_path->length = 0;
-        return;
-    }
-
-    /* 1) 采样步长：两倍网格 => 以“相隔2格”为采样点 */
-    const int STEP = 2; /* 2格步长 */
-
-    /* 将历史点放入哈希，便于判定“中点是否存在”与去重 */
-    /* 表容量设为最近的2倍幂或简单放大；为简化，取 4x history_len 上限，且最小256 */
-    int hist_cap = history_len * 4;
-    if (hist_cap < 256) hist_cap = 256;
-    spt_hash_entry_t* hist_set = (spt_hash_entry_t*)0;
-    spt_hash_entry_t* samp_set = (spt_hash_entry_t*)0;
-
-    /* 由于不使用动态分配，这里采用静态上限；根据单片机内存可调。
-       将默认值从 4096 降低为基于 SPT_MAX_POINTS 的可配置宏以减少 BSS 占用。
-       用户可在编译时通过定义 SPT_HASH_MAX 覆盖此值（例如 -DSPT_HASH_MAX=1024）。 */
-#ifndef SPT_HASH_MAX
-#define SPT_HASH_MAX (SPT_MAX_POINTS * 4)
-#endif
-    static spt_hash_entry_t s_hist[SPT_HASH_MAX];
-    static spt_hash_entry_t s_samp[SPT_HASH_MAX];
-    for (int i = 0; i < SPT_HASH_MAX; ++i) { s_hist[i].used = 0; s_samp[i].used = 0; }
-    hist_set = s_hist;
-    samp_set = s_samp;
-    hist_cap = SPT_HASH_MAX;
-
-    /* 填充历史集合 */
-    for (int i = 0; i < history_len; ++i) {
-        spt_hash_put(hist_set, hist_cap, history[i].grid_x, history[i].grid_y);
-    }
-
-    /* 2) 构建采样节点集：只保留满足 (gx % STEP == 0 && gy % STEP == 0) 的点 */
-    /* 同时收集到数组，以便后续 BFS 构图 */
-    static SPT_Point sampled[SPT_HASH_MAX];
-    int samp_cnt = 0;
-    for (int i = 0; i < history_len && samp_cnt < SPT_HASH_MAX; ++i) {
-        int16_t gx = history[i].grid_x;
-        int16_t gy = history[i].grid_y;
-        if (((gx % STEP) == 0) && ((gy % STEP) == 0)) {
-            if (!spt_hash_has(samp_set, SPT_HASH_MAX, gx, gy)) {
-                spt_hash_put(samp_set, SPT_HASH_MAX, gx, gy);
-                sampled[samp_cnt].grid_x = gx;
-                sampled[samp_cnt].grid_y = gy;
-                ++samp_cnt;
+/* BFS核心实现：从(0,0)搜索到(end_x, end_y) */
+static int spt_bfs_search(const SampledPoint* walkable, int walkable_count,
+                          int16_t end_x, int16_t end_y,
+                          BFSNode* visited, int* visited_count) {
+    /* 静态队列（环形缓冲区） */
+    static BFSNode queue[SPT_BFS_QUEUE_SIZE];
+    int queue_head = 0;
+    int queue_tail = 0;
+    
+    /* 起点入队 */
+    queue[queue_tail].x = 0;
+    queue[queue_tail].y = 0;
+    queue[queue_tail].parent_idx = -1;
+    queue_tail = (queue_tail + 1) % SPT_BFS_QUEUE_SIZE;
+    
+    /* 起点加入访问列表 */
+    visited[0].x = 0;
+    visited[0].y = 0;
+    visited[0].parent_idx = -1;
+    *visited_count = 1;
+    
+    /* 四方向：上、下、左、右 */
+    const int16_t dx[4] = {0, 0, -SPT_SAMPLE_FACTOR, SPT_SAMPLE_FACTOR};
+    const int16_t dy[4] = {-SPT_SAMPLE_FACTOR, SPT_SAMPLE_FACTOR, 0, 0};
+    
+    /* BFS主循环 */
+    while (queue_head != queue_tail) {
+        /* 出队 */
+        BFSNode current = queue[queue_head];
+        queue_head = (queue_head + 1) % SPT_BFS_QUEUE_SIZE;
+        
+        /* 找到当前节点在visited中的索引 */
+        int current_idx = -1;
+        for (int i = 0; i < *visited_count; i++) {
+            if (visited[i].x == current.x && visited[i].y == current.y) {
+                current_idx = i;
+                break;
             }
         }
-    }
-
-    /* 起点、终点网格（终点由 cm -> grid） */
-    int16_t sx = 0, sy = 0;
-    int16_t ex = spt_to_grid(end_x_cm);
-    int16_t ey = spt_to_grid(end_y_cm);
-
-    /* 若起点或终点不在采样集，尝试加入（若其本身在历史集中） */
-    if (!spt_hash_has(samp_set, SPT_HASH_MAX, sx, sy) && spt_hash_has(hist_set, hist_cap, sx, sy)) {
-        spt_hash_put(samp_set, SPT_HASH_MAX, sx, sy);
-        sampled[samp_cnt].grid_x = sx; sampled[samp_cnt].grid_y = sy; ++samp_cnt;
-    }
-    if (!spt_hash_has(samp_set, SPT_HASH_MAX, ex, ey) && spt_hash_has(hist_set, hist_cap, ex, ey)) {
-        /* 若终点不是2格对齐，但在历史里存在，也纳入采样集 */
-        spt_hash_put(samp_set, SPT_HASH_MAX, ex, ey);
-        sampled[samp_cnt].grid_x = ex; sampled[samp_cnt].grid_y = ey; ++samp_cnt;
-    }
-
-    /* 在采样节点上做BFS。邻接规则：
-       - 只能相差2格的4邻域(x±2,y)或(x,y±2)
-       - 且要求“路径中点”(相差1格的位置)在原始历史集合中（保证连通性来自历史） */
-
-    if (samp_cnt == 0) { out_path->length = 0; return; }
-
-    int start_idx = spt_find_index_linear(sampled, samp_cnt, sx, sy);
-    int goal_idx  = spt_find_index_linear(sampled, samp_cnt, ex, ey);
-    if (start_idx < 0 || goal_idx < 0) { out_path->length = 0; return; }
-
-    /* BFS 队列与父指针 */
-    static int queue[SPT_HASH_MAX];
-    static int parent[SPT_HASH_MAX];
-    static unsigned char visited[SPT_HASH_MAX];
-    int qh = 0, qt = 0;
-    for (int i = 0; i < samp_cnt; ++i) { parent[i] = -1; visited[i] = 0; }
-
-    queue[qt++] = start_idx;
-    visited[start_idx] = 1;
-
-    /* 邻接方向 */
-    const int dir[4][2] = { {2,0}, {-2,0}, {0,2}, {0,-2} };
-    int found = 0;
-
-    while (qh < qt && !found) {
-        int u = queue[qh++];
-        int16_t ux = sampled[u].grid_x;
-        int16_t uy = sampled[u].grid_y;
-        for (int d = 0; d < 4; ++d) {
-            int16_t vx = (int16_t)(ux + dir[d][0]);
-            int16_t vy = (int16_t)(uy + dir[d][1]);
-
-            int v = spt_find_index_linear(sampled, samp_cnt, vx, vy);
-            if (v < 0) continue;
-            if (visited[v]) continue;
-
-            /* 中点必须在历史集合中：保证连边合法 */
-            int16_t mx = (int16_t)((ux + vx) / 2);
-            int16_t my = (int16_t)((uy + vy) / 2);
-            if (!spt_hash_has(hist_set, hist_cap, mx, my)) continue;
-
-            visited[v] = 1;
-            parent[v] = u;
-            queue[qt++] = v;
-            if (v == goal_idx) { found = 1; break; }
+        
+        /* 检查是否到达终点 */
+        if (current.x == end_x && current.y == end_y) {
+            return current_idx;  /* 返回终点在visited中的索引 */
+        }
+        
+        /* 四方向扩展 */
+        for (int dir = 0; dir < 4; dir++) {
+            int16_t nx = current.x + dx[dir];
+            int16_t ny = current.y + dy[dir];
+            
+            /* 检查是否可通行 */
+            if (!spt_sampled_exists(walkable, walkable_count, nx, ny)) continue;
+            
+            /* 检查是否已访问 */
+            if (spt_bfs_visited(visited, *visited_count, nx, ny)) continue;
+            
+            /* 检查visited数组是否已满 */
+            if (*visited_count >= SPT_BFS_VISITED_SIZE) return -1;
+            
+            /* 加入访问列表 */
+            visited[*visited_count].x = nx;
+            visited[*visited_count].y = ny;
+            visited[*visited_count].parent_idx = current_idx;
+            
+            /* 入队 */
+            int next_tail = (queue_tail + 1) % SPT_BFS_QUEUE_SIZE;
+            if (next_tail == queue_head) return -1;  /* 队列满 */
+            
+            queue[queue_tail].x = nx;
+            queue[queue_tail].y = ny;
+            queue[queue_tail].parent_idx = current_idx;
+            queue_tail = next_tail;
+            
+            (*visited_count)++;
         }
     }
+    
+    return -1;  /* 未找到路径 */
+}
 
-    /* 重建路径到 out_path->points（顺序：起点->终点），仅更新 length */
-    out_path->length = 0;
-    if (!found) return;
-
-    /* 回溯 */
-    static int stack_idx[SPT_HASH_MAX];
-    int sp = 0;
-    for (int cur = goal_idx; cur >= 0; cur = parent[cur]) {
-        stack_idx[sp++] = cur;
-        if (cur == start_idx) break;
-        if (sp >= SPT_HASH_MAX) break;
+/* 回溯路径并存入shortest_path */
+static void spt_backtrack_path(const BFSNode* visited, int end_idx, SPT_Tracker* shortest_path) {
+    /* 临时数组存储反向路径 */
+    static SPT_Point temp_path[SPT_MAX_POINTS];
+    int temp_len = 0;
+    
+    /* 从终点回溯到起点 */
+    int idx = end_idx;
+    while (idx != -1 && temp_len < SPT_MAX_POINTS) {
+        temp_path[temp_len].grid_x = visited[idx].x;
+        temp_path[temp_len].grid_y = visited[idx].y;
+        temp_len++;
+        idx = visited[idx].parent_idx;
     }
-    /* 逆序输出：start->...->goal */
-    for (int i = sp - 1; i >= 0; --i) {
-        if (out_path->length >= SPT_MAX_POINTS) break;
-        int idx = stack_idx[i];
-        out_path->points[out_path->length].grid_x = sampled[idx].grid_x;
-        out_path->points[out_path->length].grid_y = sampled[idx].grid_y;
-        out_path->length++;
+    
+    /* 反转路径并存入shortest_path */
+    shortest_path->length = 0;
+    for (int i = temp_len - 1; i >= 0 && shortest_path->length < SPT_MAX_POINTS; i--) {
+        shortest_path->points[shortest_path->length].grid_x = temp_path[i].grid_x;
+        shortest_path->points[shortest_path->length].grid_y = temp_path[i].grid_y;
+        shortest_path->length++;
+    }
+    
+    /* 更新shortest_path的其他字段 */
+    if (shortest_path->length > 0) {
+        int last = shortest_path->length - 1;
+        shortest_path->last_grid_x = shortest_path->points[last].grid_x;
+        shortest_path->last_grid_y = shortest_path->points[last].grid_y;
+        shortest_path->has_last = 1;
     }
 }
+
+int SPT_FindShortestPath(const SPT_Tracker* history_path, 
+                         SPT_Tracker* shortest_path,
+                         int16_t end_x, 
+                         int16_t end_y) {
+    if (!history_path || !shortest_path) return -1;
+    if (history_path->length == 0) return -1;
+    
+    /* 第一步：采样历史路径并去重 */
+    static SampledPoint sampled[SPT_MAX_SAMPLED_POINTS];
+    int sampled_count = 0;
+    
+    for (int i = 0; i < history_path->length && sampled_count < SPT_MAX_SAMPLED_POINTS; i++) {
+        int16_t sx, sy;
+        spt_sample_point(history_path->points[i].grid_x, 
+                        history_path->points[i].grid_y, 
+                        &sx, &sy);
+        
+        /* 去重：只添加不存在的点 */
+        if (!spt_sampled_exists(sampled, sampled_count, sx, sy)) {
+            sampled[sampled_count].x = sx;
+            sampled[sampled_count].y = sy;
+            sampled_count++;
+        }
+    }
+    
+    if (sampled_count == 0) return -1;
+    
+    /* 第二步：对终点也进行采样 */
+    int16_t sampled_end_x, sampled_end_y;
+    spt_sample_point(end_x, end_y, &sampled_end_x, &sampled_end_y);
+    
+    /* 确保终点在可通行区域内 */
+    if (!spt_sampled_exists(sampled, sampled_count, sampled_end_x, sampled_end_y)) {
+        /* 终点不可达，尝试以历史路径最新点为终点 */
+        if (history_path->length > 0) {
+            int last = history_path->length - 1;
+            spt_sample_point(history_path->points[last].grid_x,
+                           history_path->points[last].grid_y,
+                           &sampled_end_x, &sampled_end_y);
+            
+            /* 如果最新点也不在采样区域（理论上不会发生），返回失败 */
+            if (!spt_sampled_exists(sampled, sampled_count, sampled_end_x, sampled_end_y)) {
+                return -1;
+            }
+        } else {
+            return -1;
+        }
+    }
+    
+    /* 第三步：BFS搜索 */
+    static BFSNode visited[SPT_BFS_VISITED_SIZE];
+    int visited_count = 0;
+    
+    int end_idx = spt_bfs_search(sampled, sampled_count, 
+                                 sampled_end_x, sampled_end_y,
+                                 visited, &visited_count);
+    
+    if (end_idx < 0) {
+        /* 原始终点不可达，尝试历史路径最新点 */
+        if (history_path->length > 0) {
+            int last = history_path->length - 1;
+            int16_t fallback_x, fallback_y;
+            spt_sample_point(history_path->points[last].grid_x,
+                           history_path->points[last].grid_y,
+                           &fallback_x, &fallback_y);
+            
+            /* 重置访问数组，重新搜索 */
+            visited_count = 0;
+            end_idx = spt_bfs_search(sampled, sampled_count,
+                                    fallback_x, fallback_y,
+                                    visited, &visited_count);
+            
+            if (end_idx < 0) return -1;  /* 仍然失败 */
+            
+            /* 找到到最新点的路径 */
+            spt_backtrack_path(visited, end_idx, shortest_path);
+            return 0;  /* 返回0表示找到的是到最新点的路径 */
+        }
+        return -1;
+    }
+    
+    /* 第四步：回溯路径 */
+    spt_backtrack_path(visited, end_idx, shortest_path);
+    return 1;  /* 成功找到到目标终点的路径 */
+}
+

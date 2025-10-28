@@ -463,9 +463,9 @@ void run_show(void const * argument)
       // 收到消息后执行打印功能
       osDelay(200); // 确保界面已经切换到 record 页面
       g_shortest.length = 0;
-      SPT_BuildShortestPathFromHistory(g_tracker.points, g_tracker.length, &g_shortest, g_tracker.x_cm, g_tracker.y_cm);
+      SPT_FindShortestPath(&g_tracker, &g_shortest, g_tracker.last_grid_x, g_tracker.last_grid_y);
       road_show(g_shortest.points, g_tracker.points, g_shortest.length, g_tracker.length);
-      printf("Record Command Sent\r\n");
+      // printf("Record Command Sent\r\n");
 			// snprintf(buffer, sizeof(buffer), "line %d,%d,%d,%d,%d\xff\xff\xff", 0, 70, 480, 70, 0);
       // u2printf(buffer);
     }
